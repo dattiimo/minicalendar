@@ -1,0 +1,46 @@
+﻿@using minicalendar.Common.Calendars
+@using minicalendar.Common.Icons
+<div class="flex flex-wrap">
+    @for (var i = 0; i <= 6; i++) {
+        var kind = i;
+        <button class="flex p-2 me-2 mb-2 aspect-square w-[3rem] min-w-[3rem] rounded-md border border-gray-400
+                justify-center items-center text-sm
+                shadow-sm @Style.GetBackgroundStyle(kind) @(SelectedColourKind == kind ? "ring ring-2 ring-gray-700" : string.Empty)" 
+                type="button" @onclick="() => SetColourKind(kind)">
+            @if (SelectedColourKind == kind)
+            {
+                @if (i == 0)
+                {
+                    <span class="text-red-600"><NoSymbolIcon /></span>
+                }
+                else
+                {
+                    <span class="text-white"><CheckIcon /></span>
+                }
+            }
+            else
+            {
+                @if (i == 0)
+                {
+                    <span class="text-gray-400"><NoSymbolIcon /></span>
+                }
+            }
+        </button>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public int SelectedColourKind { get; set; } = 1;
+
+    [Parameter]
+    public EventCallback<int> OnColourKindChanged { get; set; }
+
+    private void SetColourKind(int colourKind)
+    {
+        SelectedColourKind = colourKind;
+        OnColourKindChanged.InvokeAsync(colourKind);
+    }
+
+}

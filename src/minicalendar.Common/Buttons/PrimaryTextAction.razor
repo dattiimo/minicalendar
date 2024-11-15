@@ -1,0 +1,18 @@
+﻿@* 
+    Primary Action Link
+    Renders it's content as a text link and invokes OnClickAsync when clicked.
+*@
+@inherits ComponentBase
+
+<a @onclick="HandleClickAsync" class="cursor-pointer hover:underline text-green-500 hover:text-white @Class">@ChildContent</a>
+
+@code {
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClickAsync { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        await OnClickAsync.InvokeAsync();
+    }
+}

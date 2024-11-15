@@ -1,0 +1,60 @@
+﻿@page "/cal/{id:guid}/delete"
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Core
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+@inject ICalendarRepository CalendarRepo
+
+<Header>
+    <div><IconAction OnClick="HandleCancelClickAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
+</Header>
+
+<article>
+    <Container>
+        <h1 class="mb-2 my-4 text-xl font-medium">Delete Calendar</h1>
+        @if (_model.Activities.Any())
+        {
+            <p class="">"@_model.Title" has @_model.Activities.Count @("activity".Pluralise(_model.Activities.Count)).
+                Are you sure you want to delete it and all of it's activities?</p>
+        }
+        else
+        {
+            <p class="">Are you sure you want to delete "@_model.Title"?</p>
+        }
+        <div class="mt-16">
+            <PrimaryButton OnClickAsync="HandleCancelClickAsync">Keep</PrimaryButton>
+            <DangerButton OnClickAsync="HandleDeleteClickAsync">Delete</DangerButton>
+        </div>
+    </Container>
+</article>
+
+
+@code {
+    private Calendar _model = new();
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _model = await CalendarRepo.GetByIdAsync(Id);
+        if (_model == Calendar.Empty)
+        {
+            Nav.NavigateTo("notfound");
+        }
+    }
+
+    private async Task HandleDeleteClickAsync()
+    {
+        await CalendarRepo.RemoveByIdAsync(_model.Id);
+
+        Nav.NavigateTo("/");
+    }
+    
+    private Task HandleCancelClickAsync()
+    {
+        Nav.NavigateTo($"cal/{Id}/edit");
+        return Task.CompletedTask;
+    }
+
+}

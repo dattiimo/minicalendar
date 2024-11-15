@@ -1,0 +1,10 @@
+﻿@using minicalendar.Common.Privacy.CookiePolicy
+@inherits LayoutComponentBase
+
+@* Create a space for where the header will be to avoid content flashing. Headers will sit over top of the space. *@
+<div class="w-full mb-4 sm:mb-8">
+    <div class="w-full min-h-16"></div>
+</div>
+@Body
+<div class="pb-20">&nbsp;</div> @* Allow padding at the bottom of all pages to compensate for mobile frame. *@
+<CookiePolicyNotice />

@@ -1,0 +1,86 @@
+﻿@using System.Text.RegularExpressions
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Core
+<div class="flex flex-wrap">
+    @* 1: Box with initials or emoji *@
+    <button class="flex p-2 me-2 mb-2 aspect-square w-[3rem] min-w-[3rem] rounded-md border border-gray-400
+                justify-center items-center text-sm
+                shadow-sm @Style.GetBackgroundStyle(ColourKind) @(Selected == 1 ? "ring ring-2 ring-gray-700" : string.Empty)"
+            type="button" @onclick="() => SetSelected(1)">
+        <span class="@(ColourKind == 0 ? "text-gray-900" : "text-white")">@_content</span>
+    </button>
+    @if (ColourKind > 0)
+    {
+        @* 2: Box with date *@
+        <button class="flex p-2 me-2 mb-2 aspect-square w-[3rem] min-w-[3rem] rounded-md border border-gray-400
+                justify-center items-center text-sm
+                shadow-sm @Style.GetBackgroundStyle(ColourKind) @(Selected == 2 ? "ring ring-2 ring-gray-700" : string.Empty)"
+                type="button" @onclick="() => SetSelected(2)">
+            <span class="@(ColourKind == 0 ? "text-gray-900" : "text-white")">31</span>
+        </button>
+        @* 0: Blank box *@
+        <button class="flex p-2 me-2 mb-2 aspect-square w-[3rem] min-w-[3rem] rounded-md border border-gray-400
+                justify-center items-center text-sm
+                shadow-sm @Style.GetBackgroundStyle(ColourKind) @(Selected == 0 ? "ring ring-2 ring-gray-700" : string.Empty)"
+                type="button" @onclick="() => SetSelected(0)">
+            @if (Selected > 0)
+            {
+                <span class=""></span>
+            }
+        </button>
+    }
+</div>
+<div class="text-gray-500 text-sm font-light">
+    @switch (Selected)
+    {
+        case 0:
+            <span>Dates with activities will appear empty.</span>
+            break;
+        case 1:
+            <span>Dates with activities will show abbreviated text or emojis.</span>
+            break;
+        case 2:
+            <span>Dates with activities will show the date.</span>
+            break;
+    }
+</div>
+
+@code {
+    [Parameter] public int ColourKind { get; set; }
+    [Parameter] public int Selected { get; set; }
+
+    private string _content = string.Empty;
+
+    [Parameter] public string Content { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<int> OnSelectedChanged { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Content))
+        {
+            var regex = new Regex(@"^[\p{So}\p{Cs}]");
+            _content = regex.IsMatch(Content) ? Content[..Content.IndexOf(' ')] : string.Concat(Content.GetInitials().Take(2));
+        }
+
+        if (string.IsNullOrEmpty(_content))
+        {
+            _content = "AB";
+        }
+
+        if (ColourKind == 0 && Selected != 1)
+        {
+            SetSelected(1);
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private void SetSelected(int selected)
+    {
+        Selected = selected;
+        OnSelectedChanged.InvokeAsync(selected);
+    }
+
+}

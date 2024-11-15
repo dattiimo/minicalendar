@@ -1,0 +1,24 @@
+﻿@page "/privacy/data/removed"
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+
+<article>
+    <Container>
+        <h1 class="text-4xl mb-2 font-medium">Data removed</h1>
+        <div class="text-base mb-12">
+            <p class="text-lg">You can now close your browser tab.</p>
+            <p class="mt-4 text-lg">Or create a new calendar if you would like to start again.</p>
+        </div>
+        <div class="mt-8">
+            <PrimaryButton OnClickAsync="HandleClickAsync">Create new calendar</PrimaryButton>
+        </div>
+    </Container>
+</article>
+
+@code {
+    private Task HandleClickAsync()
+    {
+        Nav.NavigateTo($"/?n={DateTime.UtcNow.Ticks}");
+        return Task.CompletedTask;
+    }
+}

@@ -1,0 +1,11 @@
+
+bin/
+obj/
+node_modules/
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio
+.vs/
+*.sln.DotSettings.user

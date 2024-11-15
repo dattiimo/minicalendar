@@ -1,0 +1,52 @@
+﻿@using minicalendar.Common.Core
+@inject DateDistance DateDistance
+@inject TimeProvider TimeProvider
+
+<span>@_text</span>
+
+@code {
+    private string _text = string.Empty;
+    
+    [Parameter]
+    public List<DateOnly> SelectedDates { get; set; } = [];
+
+    protected override Task OnParametersSetAsync()
+    {
+        _text = GetSelectionText();
+        return Task.CompletedTask;
+    }
+
+    private string GetSelectionText()
+    {
+        if (!SelectedDates.Any())
+        {
+            return string.Empty;
+        }
+
+        var now = TimeProvider.GetLocalNow().DateTime;
+        var count = SelectedDates.Count;
+
+        switch (count)
+        {
+            case 1:
+            {
+                var date = SelectedDates.First();
+                var diff = now.ToDateOnly().DayNumber - date.DayNumber;
+                return diff switch
+                {
+                    0 => "1 date selected.",
+                    > -365 and < 365 => "1 date selected " + DateDistance.TimeAway(now.ToDateOnly(), date) + ".",
+                    _ => "1 date selected."
+                };
+            }
+            case 2:
+            {
+                var from = SelectedDates.First();
+                var to = SelectedDates.Skip(1).First();
+                return "2 dates selected " + DateDistance.TimeBetween(from, to) + ".";
+            }
+            default:
+                return $"{count} dates selected.";
+        }
+    }
+}

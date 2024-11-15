@@ -1,0 +1,459 @@
+﻿@page "/cal/{id:guid}"
+@using minicalendar.Common.ViewOrientation
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.Core
+@using minicalendar.Common.YearSpan
+@using minicalendar.Pwa.Calendars.Components
+@using minicalendar.Common.Blade
+@using minicalendar.Common.Forms
+@using minicalendar.Common.ScrollToElement
+@using minicalendar.Common.DateAndTime
+@using minicalendar.Common.Drawer
+@* @inject ISelectedCalendarDates SelectedCalendarDates *@
+@inject ICalendarRepository CalendarRepository
+@inject TimeProvider TimeProvider
+@inject NavigationManager Nav
+@inject DateDistance DateDistance
+@inject ILogger<CalendarPage> Logger
+@inject ISelectedCalendarDates SelectedDates
+
+<CalendarTour Enabled="@(Tour == true)"></CalendarTour>
+
+<ViewOrientation Orientation="@_orientation">
+    <Header IsActive="_selectedDates.Any()">
+        @if (_selectedDates.Any())
+        {
+            <div class="ms-2">
+                <DateSelectionSummary SelectedDates="_selectedDates"/>
+            </div>
+            <div>
+                <IconAction OnClick="OnSelectedClearClickAsync" Title="Cancel selected days" IsActive="true">
+                    <XMarkIcon class="size-6 sm:size-8"></XMarkIcon>
+                </IconAction>
+            </div>
+        }
+        else
+        {
+            <div class="flex justify-center content-center">
+                <IconAction Url="/" Title="Back">
+                    <ArrowLeftIcon class="size-6 sm:size-8"/>
+                </IconAction>
+                <span class="hidden sm:block ps-10 sm:ps-12 text-xl">
+                    <CurrentDate Value="@_today"></CurrentDate>
+                    @* <DateDisplay Date="@_today"></DateDisplay> *@
+                </span>
+            </div>
+
+            <div>
+                <IconAction Title="View options" OnClick="HandleViewOptionsClick">
+                    <EyeIcon class="size-6 sm:size-8"></EyeIcon>
+                </IconAction>
+                <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
+                    <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
+                </IconAction>
+            </div>
+        }
+    </Header>
+
+
+    <article class="mb-16 mx-4">
+        @* Calendar title and description *@
+        <h1 class="container mx-auto mt-8 sm:mt-16 text-center text-lg sm:text-4xl font-medium sm:font-normal text-gray-800">@_calendar.Title</h1>
+        @if (!string.IsNullOrEmpty(_calendar.Description))
+        {
+            <div class="container mx-auto mt-1 sm:mt-2 text-center text-base sm:text-lg text-gray-500">@_calendar.Description&nbsp;</div>
+        }
+
+        @* Display the calendar and optional legend *@
+        @* Small screens in portrait display the legend below the calendar. *@
+        @* Larger screens in portrait display the legend fixed to the right. *@
+        <div class="flex mt-16 sm:mt-24 vport:flex-col vport:md:flex-row vport:md:container vport:md:mx-auto vport:justify-center
+                vland:flex-col vland:justify-start">
+            @* Calendar *@
+            <div class="vland:overflow-x-scroll vland:md:overflow-x-visible vland:py-4 vport:flex vport:flex-col">
+                <div class="vland:lg:min-w-[1900px] vport:md:min-w-[450px] vport:mb-8">
+                    <YearSpan @ref="_yearSpan" FromDate="_calendar.StartDate"
+                              CurrentDate="_today"
+                              Activities="_calendar.Activities"
+                              ShowAllDates="_showDates"
+                              EnableSprint="_calendar.EnableSprint"
+                              SprintStartDate="_calendar.SprintStartDate"
+                              SprintInterval="_calendar.SprintInterval"
+                              OnDateSelectAsync="OnDateSelectAsync">
+                    </YearSpan>
+                </div>
+            </div>
+            @* Legend *@
+            @* @if (_showLegend) *@
+            @* { *@
+            <aside class="vport:md:ms-10 vport:md:mt-8 vland:my-8 w-64 max-w-64">
+                @if (_showLegend && !_selectedDates.Any())
+                {
+                    <div class="vport:md:sticky vport:md:top-28">
+                        <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id"
+                                OnActivityClickAsync="OnLegendActivitySelect"></Legend>
+                    </div>
+                }
+            </aside>
+            @* } *@
+        </div>
+    </article>
+</ViewOrientation>
+<ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement>
+
+@* Aside panel *@
+<Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
+    @* view orientation *@
+    <div class="mb-8">
+        <div class="">
+            <label class="text-lg">Orientation</label>
+        </div>
+        <div class="flex flex-row justify-between">
+            <ToggleButton OnClick="HandleViewPortraitClick" IsActive="_orientation != ViewOrientationType.Landscape">
+                <DevicePhoneMobileIcon class="size-6 sm:size-8 me-2"></DevicePhoneMobileIcon>
+                <span>Portrait</span>
+            </ToggleButton>
+            <ToggleButton OnClick="HandleViewLandscapeClick" IsActive="_orientation == ViewOrientationType.Landscape">
+                <DevicePhoneMobileIcon class="size-6 sm:size-8 me-2 rotate-90"></DevicePhoneMobileIcon>
+                <span>Landscape</span>
+            </ToggleButton>
+        </div>
+    </div>
+    @* show legend *@
+    <div class="mb-8">
+        <Toggle Title="Show legend" @bind-Value="_showLegend">The activity titles will appear on the calendar view.</Toggle>
+    </div>
+    @* show date *@
+    <div>
+        <Toggle Title="Display Dates" @bind-Value="_showDates">The date will be shown on all days.</Toggle>
+    </div>
+</Drawer>
+
+<Drawer @bind-IsOpen="_showLegendDetail" Title="">
+    @if (_selectedActivity != null)
+    {
+        <div class="text-lg mb-2">@_selectedActivity.Title</div>
+        @if (_selectedActivity.Count > 0)
+        {
+            <div class="mb-1">#️⃣ Total: @_selectedActivity.Count</div>
+        }
+        @if (!string.IsNullOrEmpty(_selectedActivity.NextDateText))
+        {
+            <div class="mb-1">➡️ Next: @_selectedActivity.DaysToNext @("day".Pluralise(_selectedActivity.DaysToNext)) away</div>
+        }
+        @if (!string.IsNullOrEmpty(_selectedActivity.LastDateText))
+        {
+            <div class="mb-1">⬅️ Previous: @_selectedActivity.DaysFromPrevious ago</div>
+        }
+        <div class="mt-16">
+            <PrimaryTextAction OnClickAsync="() => ToggleActivityVisibilityAsync(_selectedActivity.Id)">@(_selectedActivity.IsShown ? "HIDE" : "SHOW") DATES</PrimaryTextAction>
+        </div>
+    }
+</Drawer>
+
+@if (_selectedDates.Any())
+{
+    <CalendarActions Activities="_calendar.Activities" SelectedDates="_selectedDates" CalendarId="_calendar.Id"
+                     OnSelected="async (activity) => await HandleActivityClickAsync(activity.Id)"
+                    OnCreate="HandleCreateActivityClickAsync" />
+}
+@* Activity actions *@
+@* <QuickAction IsShown="_selectedDates.Any()" CanExpand="_calendar.Activities.Any()"> *@
+@*     <Collapsed> *@
+@*         @if (_calendar.Activities.Any()) *@
+@*         { *@
+@*             @foreach (var evt in _calendar.Activities) *@
+@*             { *@
+@*                 <TinyActivityActionToggle Activity="evt" *@
+@*                                   IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
+@*                                   OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
+@*                 </TinyActivityActionToggle> *@
+@*             } *@
+@*         } *@
+@*         else *@
+@*         { *@
+@*             <p class="font-light me-20 text-sm">You have no existing activities. Add a new one for the chosen dates.</p> *@
+@*         } *@
+@* $1$         <button type="button" class="px-2 py-2 m-2 flex justify-center bg-gray-900 text-green-400  #1# *@
+@* $1$                   hover:bg-green-400 hover:text-white  #1# *@
+@* $1$                   rounded-full shadow-lg shadow-gray-600"  #1# *@
+@* $1$               aria-label="Create new activity"  #1# *@
+@* $1$               title="Create new activity"  #1# *@
+@* $1$               @onclick="HandleCreateActivityClickAsync">  #1# *@
+@*         $1$           <PlusIcon class="size-8 sm:size-10"></PlusIcon>  #1# *@
+@*         $1$ </button> #1# *@
+@*         <button class="p-2 m-2 rounded-full min-w-10 flex justify-center items-center text-sm sm:text-base select-none *@
+@*                 border-2 border-gray-900 hover:border-green-400 *@
+@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
+@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
+@*                 type="button" *@
+@*                 @onclick="HandleCreateActivityClickAsync" *@
+@*         ><PlusIcon class="size-6 sm:size-8" /></button> *@
+@*     </Collapsed> *@
+@*     <Expanded> *@
+@*         @foreach (var evt in _calendar.Activities) *@
+@*         { *@
+@*             <ActivityActionToggle Activity="evt" *@
+@*                               IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
+@*                               OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
+@*             </ActivityActionToggle> *@
+@*         } *@
+@* *@
+@*         <button class="m-2 py-1 px-3 rounded text-sm sm:text-lg select-none overflow-hidden *@
+@*                 flex justify-center *@
+@*                 border-2 border-gray-900 hover:border-green-400 *@
+@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
+@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
+@*             type="button" *@
+@*             @onclick="HandleCreateActivityClickAsync"><PlusIcon class="size-4 sm:size-6" /> *@
+@*             <span class="ms-2">Create new</span> *@
+@*         </button> *@
+@*          *@
+@*         <div class="flex justify-between pt-4 px-2 pb-16 w-full"> *@
+@*             @if (_calendar.Activities.Any()) *@
+@*             {             *@
+@*                 <a href="cal/@_calendar.Id/activities/list" class="flex justify-center hover:text-green-400"> *@
+@*                     <button type="button" class="me-2" *@
+@*                             aria-label="Edit activities" *@
+@*                             title="Edit activities"> *@
+@*                         <PencilSquareIcon class="size-6"/> *@
+@*                     </button> *@
+@*                     <span>Edit activities</span> *@
+@*                 </a> *@
+@*             } *@
+@*             $1$ <a href="cal/@_calendar.Id/activities/create" class="flex justify-center hover:text-green-400"> #1# *@
+@*             $1$     <button type="button" class="me-2" #1# *@
+@*             $1$             aria-label="Create new activity" #1# *@
+@*             $1$             title="Create new activity"> #1# *@
+@*             $1$         <PlusIcon classs="size-6"/> #1# *@
+@*             $1$     </button> #1# *@
+@*             $1$     <span>Create activity</span> #1# *@
+@*             $1$ </a> #1# *@
+@*         </div> *@
+@*     </Expanded> *@
+@* $1$      <Action> #1# *@
+@* $1$          $2$ <div class="self-end"> #2# #1# *@
+@* $1$              <button type="button" class="p-3 sm:p-3 flex justify-center bg-gray-900 text-green-400 #1# *@
+@* $1$                          hover:bg-green-400 hover:text-white #1# *@
+@* $1$                           rounded-full shadow-lg shadow-gray-600" #1# *@
+@* $1$                      aria-label="Create new activity" #1# *@
+@* $1$                      title="Create new activity" #1# *@
+@* $1$                      @onclick="HandleCreateActivityClickAsync"> #1# *@
+@* $1$                  <PlusIcon class="size-8 sm:size-10"></PlusIcon> #1# *@
+@* $1$              </button> #1# *@
+@* $1$          $2$ </div> #2# #1# *@
+@* $1$      </Action> #1# *@
+@* </QuickAction> *@
+
+
+@code {
+    private DateOnly _today;
+    private Calendar _calendar = new();
+    private List<DateOnly> _selectedDates = [];
+    private bool _showViewOptions;
+    private ViewOrientationType _orientation = ViewOrientationType.Default;
+    private bool _showLegend = true;
+    private bool _showDates = true;
+    private bool _showLegendDetail;
+    private SelectedActivity? _selectedActivity;
+    private YearSpan _yearSpan = new();
+
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
+    [Parameter] [SupplyParameterFromQuery] public bool? Tour { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var now = TimeProvider.GetLocalNow().DateTime;
+        _today = Today ?? now.ToDateOnly();
+
+        _calendar = await CalendarRepository.GetByIdAsync(Id);
+        if (_calendar == Calendar.Empty)
+        {
+            Nav.NavigateTo("notfound");
+            return;
+        }
+
+        //_selectedDates = (await SelectedCalendarDates.GetAsync()).ToList();
+
+        await CalendarRepository.RecordView(_calendar);
+
+        await base.OnParametersSetAsync();
+    }
+
+    private Task OnLegendActivitySelect(Activity e)
+    {
+        Logger.LogInformation($"OnLegendActivitySelect({e.Title})");
+        var activity = _calendar.Activities.SingleOrDefault(x => x.Id == e.Id);
+        if (activity == null)
+        {
+            return Task.CompletedTask;
+        }
+        
+        _selectedActivity = new SelectedActivity
+        {
+            Id = activity.Id,
+            Title = activity.Title,
+            Count = activity.Dates.Count,
+            IsShown = activity.IsShown
+        };
+        
+        DateOnly? nextDate = activity.Dates.FirstOrDefault(x => x >= _today);
+        if (nextDate.HasValue && nextDate > DateOnly.MinValue && nextDate != _today)
+        {
+            var diff = _today.Difference(nextDate.Value);
+            _selectedActivity.DaysToNext = diff.TotalDays;
+            _selectedActivity.NextDateText = $"{diff.TotalDays} days until the next activity.";
+        }
+        
+        DateOnly? lastDate = activity.Dates.FirstOrDefault(x => x < _today);
+        if (lastDate.HasValue && lastDate > DateOnly.MinValue && lastDate != _today)
+        {
+            var diff = _today.Difference(lastDate.Value);
+            _selectedActivity.DaysFromPrevious = diff.TotalDays;
+            _selectedActivity.LastDateText = $"{diff.TotalDays} days since the last activity.";
+        }
+
+        _showViewOptions = false;
+        _showLegendDetail = true;
+         return Task.CompletedTask;
+    }
+
+    private Task OnDateSelectAsync(YearSpan.DateSelectedEvent evt)
+    {
+        // if (await SelectedCalendarDates.ContainsAsync(date))
+        // {
+        //     await SelectedCalendarDates.RemoveAsync(date);
+        // }
+        // else
+        // {
+        //     await SelectedCalendarDates.AddAsync(date);
+        // }
+        
+        //var dates = await SelectedCalendarDates.GetAsync();
+        
+        
+        _selectedDates = evt.AllDates.ToList();
+
+        HideAllDrawers();
+        
+        return Task.CompletedTask;
+    }
+
+    private void HideAllDrawers()
+    {
+        _showLegendDetail = false;
+        _showViewOptions = false;
+    }
+
+    private async Task OnSelectedClearClickAsync()
+    {
+        //await SelectedCalendarDates.ClearAsync();
+        await _yearSpan.ClearSelectedAsync();
+        _selectedDates = [];
+    }
+
+    private async Task HandleActivityClickAsync(Guid activityId)
+    {
+        // Ensure the calendar exists as it may have since been deleted
+        // var calendar = await CalendarRepository.GetByIdAsync(Id);
+        // if (calendar == Calendar.Empty)
+        // {
+        //     await Nav.NavigateToAsync("app/notfound");
+        // }
+    
+        if (!_selectedDates.Any())
+        {
+            return;
+        }
+    
+        var evt = _calendar.Activities.SingleOrDefault(x => x.Id == activityId);
+        if (evt == null)
+        {
+            return;
+        }
+    
+        if (_selectedDates.All(x => evt.Dates.Contains(x)))
+        {
+            // remove
+            foreach (var date in _selectedDates)
+            {
+                evt?.RemoveDate(date);
+            }
+        }
+        else
+        {
+            // add
+            foreach (var date in _selectedDates)
+            {
+                evt?.AddDate(date);
+            }
+        }
+    
+        await CalendarRepository.SaveItemAsync(_calendar);
+    
+        //await SelectedCalendarDates.ClearAsync();
+        await _yearSpan.ClearSelectedAsync();
+        _selectedDates = [];
+    }
+    
+    private async Task HandleCreateActivityClickAsync()
+    {
+        await SelectedDates.ClearAsync();
+        await SelectedDates.AddAsync(_selectedDates);
+        Nav.NavigateTo($"cal/{_calendar.Id}/activities/create");
+    }
+    
+    private Task HandleViewPortraitClick()
+    {
+        _orientation = ViewOrientationType.Portrait;
+        return Task.CompletedTask;
+    }
+    
+    private Task HandleViewLandscapeClick()
+    {
+        _orientation = ViewOrientationType.Landscape;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleViewOptionsClick()
+    {
+        _showLegendDetail = false;
+        _showViewOptions = !_showViewOptions;
+
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleActivityVisibilityAsync(Guid id)
+    {
+        var activity = _calendar.Activities.SingleOrDefault(x => x.Id == id);
+        if (activity == null)
+        {
+            return Task.CompletedTask;
+        }
+    
+        activity.IsShown = !activity.IsShown;
+        if (_selectedActivity != null)
+        {
+            _selectedActivity.IsShown = activity.IsShown;
+        }
+    
+        _showLegendDetail = false;
+    
+        return Task.CompletedTask;
+    }
+
+    private class SelectedActivity
+    {
+        public Guid Id { get; set; } = Guid.Empty;
+        public string Title { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public string NextDateText { get; set; } = string.Empty;
+        public string LastDateText { get; set; } = string.Empty;
+        public int DaysToNext { get; set; }
+        public int DaysFromPrevious { get; set; }
+        public bool IsShown { get; set; }
+    }
+
+}

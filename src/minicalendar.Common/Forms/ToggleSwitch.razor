@@ -1,0 +1,32 @@
+﻿<label class="relative flex h-2 @Class">
+    <input type="checkbox" class="absolute left-1/2 -translate-x-1/2 w-full h-full peer
+                    appearance-none rounded-md enabled:cursor-pointer"
+           checked="@_innerValue" disabled="@Disabled" @onclick="() => SetValueAsync(!_innerValue)" />
+    <span class="w-16 h-10 flex items-center flex-shrink-0 p-1 bg-gray-300 rounded-full duration-300
+                    ease-in-out peer-checked:bg-blue-500 after:w-8 after:h-8 after:bg-white after:rounded-full
+                    after:shadow-md after:duration-300 peer-checked:after:translate-x-6 peer-enabled:cursor-pointer
+                    peer-disabled:bg-gray-200"></span>
+</label>
+
+@code {
+    
+    [Parameter]
+    public bool Value {
+        get => _innerValue;
+        set => _innerValue = value;
+    }
+    private bool _innerValue;
+
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    [Parameter] public bool? Disabled { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+
+    private async Task SetValueAsync(bool value)
+    {
+        _innerValue = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+}

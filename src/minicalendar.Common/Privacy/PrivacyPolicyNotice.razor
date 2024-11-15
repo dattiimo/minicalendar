@@ -1,0 +1,7 @@
+﻿<div class="rounded border border-yellow-500 bg-yellow-100 p-4">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+}

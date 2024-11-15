@@ -1,0 +1,94 @@
+﻿@page "/"
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Alerts
+@using minicalendar.Pwa.Calendars.Components
+@using minicalendar.Common.Core
+@inject ICalendarRepository CalendarRepo
+@inject NavigationManager Nav
+@inject TimeProvider TimeProvider
+
+<Header>
+    <div>
+        <IconAction OnClick="HandleMenuClickAsync" Title="Cancel">
+            <Bars3Icon class="size-6 sm:size-8"></Bars3Icon>
+        </IconAction>
+    </div>
+</Header>
+
+<Container>
+    @if (CalendarItems.Count >= GlobalConstants.MaxNumberOfCalendars)
+    {
+        <div class="mb-6">
+            <AlertWarning>You have reached the maximum number of calendar allowed. You must delete an existing calendar before creating a new one.</AlertWarning>
+        </div>
+    }
+    else
+    {
+        <div class="mb-6 flex justify-end">
+            <PrimaryButton OnClickAsync="HandleCreateClickAsync">Create a new calendar</PrimaryButton>
+        </div>
+    }
+    <div class="mb-24">
+        <CalendarList Items="CalendarItems" OnSelect="HandleSelectClickAsync"/>
+    </div>
+    <div class="mb-12">
+        <h2 class="text-2xl mb-2">Templates</h2>
+        <p class="mb-8">Select a template below to create a calendar from an existing template.</p>
+        <TemplateCalendarList/>
+    </div>
+</Container>
+
+@code {
+    private List<CalendarListItem> CalendarItems { get; set; } = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var cals = await CalendarRepo.GetAllAsync();
+        if (cals.Any())
+        {
+            CalendarItems = cals.OrderByDescending(x => x.LastModifiedAt).Select(x => new CalendarListItem
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                LastModifiedAt = x.LastModifiedAt,
+                IsEditable = true
+            }).ToList();
+            return;
+        }
+        
+        // For a user's first visit we should go straight to a calendar so there's as little friction as possible to the first interaction.
+        // The first visit is determined by having no calendars saved.
+        // Default the calendar to the current year.
+        var now = TimeProvider.GetLocalNow().DateTime;
+        var cal = new Calendar
+        {
+            Title = now.Year.ToString(),
+            StartDate = now.ToDateOnly().StartOfYear()
+        };
+        await CalendarRepo.SaveItemAsync(cal);
+        // Show the newly created calendar and, as this is the first visit, include the product tour
+        Nav.NavigateTo($"cal/{cal.Id}?tour=true");
+    }
+
+    private Task HandleSelectClickAsync(CalendarListItem cal)
+    {
+        Nav.NavigateTo($"cal/{cal.Id}");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCreateClickAsync()
+    {
+        Nav.NavigateTo("cal/create");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleMenuClickAsync()
+    {
+        Nav.NavigateTo("menu");
+        return Task.CompletedTask;
+    }
+
+}

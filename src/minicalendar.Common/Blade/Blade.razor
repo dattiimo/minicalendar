@@ -1,0 +1,42 @@
+﻿@using minicalendar.Common.Headers
+@using minicalendar.Common.Icons
+<aside class="fixed top-0 w-96 h-full z-50 ease-out duration-200 
+            bg-gray-800 text-white overflow-y-auto 
+            @(IsOpen ? "right-0" : "-right-96")">
+    <div class="mb-4 sm:mb-8 px-5">
+        <div class="flex w-full justify-between items-center min-h-16">
+            <div class="text-lg">@Title</div>
+            <div>
+                <IconAction OnClick="() => SetIsOpen(false)" Title="Close">
+                    <XMarkIcon class="size-6 sm:size-8"></XMarkIcon>
+                </IconAction>
+            </div>
+        </div>
+    </div>
+    <div class="px-5 pb-16">
+        @ChildContent
+    </div>
+</aside>
+<div class="top-0 left-0 h-screen w-screen z-40 bg-gray-900 opacity-50
+    @(IsOpen ? "fixed" : "hidden")" @onclick="() => SetIsOpen(false)"></div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+
+    private bool _isOpen;
+    [Parameter]
+    public bool IsOpen
+    {
+        get => _isOpen; 
+        set => _isOpen = value;
+    }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private async Task SetIsOpen(bool value)
+    {
+        _isOpen = value;
+        await IsOpenChanged.InvokeAsync(value);
+    }
+
+}

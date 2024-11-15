@@ -1,0 +1,47 @@
+﻿@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.Calendars
+
+@if (Activities.Count > 0)
+{
+    <div class="flex flex-wrap vland:flex-row vport:flex-col">
+        @foreach (var evt in Activities)
+        {
+            <div class="inline-flex py-1 px-2 me-4 mb-2 border-l-8 cursor-pointer 
+                    @Style.GetBorderStyle(evt.ColourKind, isActivated: evt.IsShown) 
+                    @(evt.IsShown ? string.Empty : " opacity-75 text-gray-500")"
+                 @onclick="() => OnActivityClick(evt)">
+                <span>@evt.Title</span>
+            </div>
+        }
+        @if (Editable && Activities.Count > 0)
+        {
+            <div class="">
+                <a class="inline-flex underline hover:no-underline text-blue-600 hover:text-blue-400" href="@($"cal/{CalendarId}/activities/list")">
+                    <PencilSquareIcon />
+                    <span class="ms-2">edit</span>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public Guid CalendarId { get; set; }
+
+    [Parameter]
+    public List<Activity> Activities { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<Activity> OnActivityClickAsync { get; set; }
+
+    [Parameter]
+    public bool Editable { get; set; } = true;
+
+    private async Task OnActivityClick(Activity evt)
+    {
+        await OnActivityClickAsync.InvokeAsync(evt);
+    }
+
+}

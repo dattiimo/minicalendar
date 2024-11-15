@@ -1,0 +1,34 @@
+﻿@using minicalendar.Pwa.Calendars.Templates
+@using minicalendar.Common.Calendars
+@inject NavigationManager Nav
+@inject TemplateCalendarRepository TemplateCalendarRepo
+@inject ICalendarRepository CalendarRepo
+
+<CalendarList Items="CalendarItems" OnSelect="@HandleSelectClickAsync" />
+
+@code {
+    private List<CalendarListItem> CalendarItems { get; set; } = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var calendars = await TemplateCalendarRepo.GetAllAsync();
+        CalendarItems = calendars.Select(x => new CalendarListItem
+        {
+            Id = x.Id,
+            Title = x.Title,
+            Badge = "template",
+            IsEditable = false,
+            Description = x.Description
+        }).ToList();
+        StateHasChanged();
+    }
+
+    private async Task HandleSelectClickAsync(CalendarListItem cal)
+    {
+        var demoCal = await TemplateCalendarRepo.GetByIdAsync(cal.Id);
+        var newCal = demoCal.Duplicate();
+        await CalendarRepo.SaveItemAsync(newCal);
+
+        Nav.NavigateTo($"cal/{newCal.Id}");
+    }
+}

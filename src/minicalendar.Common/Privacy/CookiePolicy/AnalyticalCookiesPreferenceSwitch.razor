@@ -1,0 +1,41 @@
+﻿@using minicalendar.Common.Forms
+@inject ICookiePolicyManager PolicyManager
+
+@if (IsLoaded)
+{
+    <ToggleSwitch @bind-Value="Value" @bind-Value:after="HandleValueChanged" />
+}
+
+@code {
+    private bool IsLoaded { get; set; }
+    private bool Value { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await OnAfterFirstRenderAsync();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private  async Task OnAfterFirstRenderAsync()
+    {
+        // Load the value and enable the control
+        Value = await PolicyManager.HasAcceptedAnalyticsCookiesAsync();
+        IsLoaded = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleValueChanged()
+    {
+        if (Value)
+        {
+            await PolicyManager.AcceptAnalyticalCookiesAsync();
+        }
+        else
+        {
+            await PolicyManager.RejectAnalyticalCookiesAsync();
+        }
+    }
+}

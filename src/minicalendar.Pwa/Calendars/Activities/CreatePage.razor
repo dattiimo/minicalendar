@@ -1,0 +1,106 @@
+﻿@page "/cal/{calendarId:guid}/activities/create"
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.Forms.Validation
+@using minicalendar.Common.Forms
+@using minicalendar.Common
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+@inject ISelectedCalendarDates SelectedDates
+@inject ICalendarRepository CalendarRepo
+
+<Header>
+    <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
+    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" Title="Save">Save</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
+            <CustomDataAnnotationsValidator/>
+            <div class="">
+                <label for="title" class="block my-2">Title</label>
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
+                <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label class="block my-2">Colour</label>
+                <ColourSelector SelectedColourKind="_model.ColourKind"
+                                                            OnColourKindChanged="(colour) => _model.ColourKind = colour"/>
+            </div>
+            <div class="my-6">
+                <label class="block my-2">Style</label>
+                <DateStyle ColourKind="_model.ColourKind" Content="@_model.Title"
+                                                       Selected="_model.StyleKind"
+                                                       OnSelectedChanged="(style) => _model.StyleKind = style"/>
+            </div>
+            <div class="my-6">
+                <label for="Dates" class="block my-2">Dates</label>
+                <DateEditor Value="_model.Dates" Id="Dates" ValueChanged="HandleStateChangedAsync"/>
+                <ValidationMessage For="() => _model.Dates" id="dates_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <DateList Dates="_model.Dates"/>
+            </div>
+        </EditForm>
+    </Container>
+</article>
+
+@code {
+    private EditContext? _editContext;
+    private Activity _model = new();
+    private Calendar _calendar = new();
+    
+    [Parameter]
+    public Guid CalendarId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _calendar = await CalendarRepo.GetByIdAsync(CalendarId);
+        _model = new Activity
+        {
+            Dates = (await SelectedDates.GetAsync()).ToList()
+        };
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _editContext?.SetFieldCssClassProvider(new TwValidationCssClassProvider());
+        var isValid = _editContext?.Validate() ?? false;
+        if (isValid)
+        {
+            await HandleValidSubmitAsync();
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        var cal = await CalendarRepo.GetByIdAsync(_calendar.Id);
+        await cal.AddActivityAsync(_model);
+        await CalendarRepo.SaveItemAsync(cal);
+        await SelectedDates.ClearAsync();
+        Nav.NavigateTo($"cal/{_calendar.Id}");
+    }
+
+    private Task HandleCancelAsync()
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleStateChangedAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+}

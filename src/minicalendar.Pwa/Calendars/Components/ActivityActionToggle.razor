@@ -1,0 +1,33 @@
+﻿@using minicalendar.Common.Calendars.Activities
+
+
+<button class="m-2 py-1 px-3 rounded text-sm sm:text-lg select-none overflow-hidden
+        @GetSelectedStyle(Activity.ColourKind)
+        @Activity.GetBackgroundStyle(Activity.ColourKind)
+        @Activity.GetColourStyle("ring", Activity.ColourKind) ring-2"
+    type="button"
+    @onclick="async () => await HandleClickAsync()">@Activity.Title</button>
+
+@code {
+    [Parameter] public Activity Activity { get; set; } = Activity.Empty;
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    
+    private string GetSelectedStyle(int colourKind)
+    {
+        return "border-2 " + (IsSelected ? "border-red-800 " : Activity.GetColourStyle("border", colourKind)) + " ";
+    }
+
+    private async Task HandleClickAsync()
+    {
+        await OnClick.InvokeAsync(new ActivityButtonActionEvent
+        {
+            Id = Activity.Id
+        });
+    }
+
+    public class ActivityButtonActionEvent
+    {
+        public Guid Id { get; init; }
+    }
+}

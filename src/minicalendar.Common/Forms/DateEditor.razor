@@ -1,0 +1,61 @@
+﻿@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+@using minicalendar.Common.Icons
+
+<div class="flex w-full ps-1 rounded-md border border-gray-400 shadow-sm 
+        sm:max-w-md text-gray-900 @(IsValid() ? "" : " border-red-800")">
+    <InputDate id="@Id" @bind-Value="SelectedDate" class="py-2 px-4 w-full"/>
+    <button class="ms-auto bg-blue-500 p-2 rounded-e-md text-white" type="button" 
+            @onclick="HandleDateAdd"><PlusIcon /></button>
+</div>
+
+@code {
+    private DateOnly? SelectedDate { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = null!;
+
+    [Parameter]
+    public List<DateOnly> Value { get; set; } = [];
+    
+    [Parameter]
+    public EventCallback<List<DateOnly>> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<List<DateOnly>>> ValueExpression { get; set; } = null!;
+
+    [CascadingParameter]
+    EditContext? CurrentEditContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (string.IsNullOrEmpty(Id))
+        {
+            throw new ArgumentNullException(nameof(Id), $"Attribute {nameof(Id)} cannot be null");
+        }
+    }
+    
+    private async Task HandleDateAdd()
+    {
+        if (SelectedDate == null || Value.Contains(SelectedDate.Value))
+        {
+            return;
+        }
+        Value.Add(SelectedDate.Value);
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private bool IsValid()
+    {
+        var field = CurrentEditContext?.Field(Id);
+        if (field == null)
+        {
+            return true;
+        }
+        var isInvalid = CurrentEditContext?.GetValidationMessages(field.Value).Any() ?? false;
+        return !isInvalid;
+    }
+
+}

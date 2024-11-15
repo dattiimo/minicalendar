@@ -1,0 +1,100 @@
+﻿@page "/cal/create"
+@using minicalendar.Common.Forms.Validation
+@using minicalendar.Common.Alerts
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Core
+@using minicalendar.Common.Forms
+@inject ICalendarRepository CalendarRepo
+@inject NavigationManager Nav
+
+<Header>
+    <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
+    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" DisableSubmit="@(_calendars.Count >= GlobalConstants.MaxNumberOfCalendars)" Title="Save">Save</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        @if (_calendars.Count >= GlobalConstants.MaxNumberOfCalendars)
+        {
+            <AlertWarning>
+                You have reached the maximum number of calendars allowed. You must delete an existing calendar before creating a new one.
+                <PrimaryLink Uri="app">View all calendars</PrimaryLink>
+            </AlertWarning>
+        }
+        <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
+            <CustomDataAnnotationsValidator />
+            <div class="my-6">
+                <label for="title" class="block my-2">Title</label>
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label for="description" class="block my-2">Description (optional)</label>
+                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label for="startDate" class="block my-2">Start On</label>
+                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.StartDate" id="startDate_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <Toggle Title="Sprint Planning" @bind-Value="_model.EnableSprint">Enable sprint tracks on the calendar.</Toggle>
+            @if (_model.EnableSprint)
+            {
+                <div class="my-4 ms-8">
+                    <label for="sprintStartDate" class="block my-2">Start Sprint On</label>
+                    <InputDate id="sprintStartDate" @bind-Value="_model.SprintStartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                    <ValidationMessage For="() => _model.SprintStartDate" id="sprintStartDate_feedback" class="mx-2 py-1 text-red-800"/>
+                </div>
+                <div class="my-4 ms-8">
+                    <label for="sprintInterval" class="block my-2">Number of days</label>
+                    <InputNumber id="sprintInterval" @bind-Value="_model.SprintInterval" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                    <ValidationMessage For="() => _model.SprintInterval" id="sprintInterval_feedback" class="mx-2 py-1 text-red-800"/>
+                </div>
+            }
+        </EditForm>
+    </Container>
+</article>
+
+@code {
+    private EditContext? _editContext;
+    private Calendar _model = new();
+    private List<Calendar> _calendars = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _calendars = await CalendarRepo.GetAllAsync();
+
+        _model = new Calendar {StartDate = DateTime.Now.ToDateOnly().StartOfYear()};
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _editContext?.SetFieldCssClassProvider(new TwValidationCssClassProvider());
+        var isValid = _editContext?.Validate() ?? false;
+        if (isValid)
+        {
+            await HandleValidSubmitAsync();
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        await CalendarRepo.SaveItemAsync(_model);
+        Nav.NavigateTo($"cal/{_model.Id}");
+    }
+
+    private Task HandleCancelAsync()
+    {
+        Nav.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+}

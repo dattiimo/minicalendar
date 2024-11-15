@@ -1,0 +1,15 @@
+﻿<button @onclick="HandleClickAsync" 
+        class="text-white bg-blue-500 border-0 py-2 px-4 m-1 focus:outline-none hover:bg-blue-600 rounded"
+        type="button" aria-label="@Title" title="@Title"
+>@ChildContent</button>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClickAsync { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        await OnClickAsync.InvokeAsync();
+    }
+}

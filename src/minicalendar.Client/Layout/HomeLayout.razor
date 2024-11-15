@@ -1,0 +1,21 @@
+﻿@using minicalendar.Common.Privacy.CookiePolicy
+@inherits LayoutComponentBase
+
+@* Use the data-enhance-nav attribute to disable Enhanced Navigation for all pages by default. *@
+@* https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/routing?view=aspnetcore-8.0#enhanced-navigation-and-form-handling *@
+<div class="flex flex-col h-screen container mx-auto px-5" data-enhance-nav="false">
+    <div><Header ShowName="true"></Header></div>
+    <div class="py-20">@Body</div>
+    <div class="mt-auto"><Footer></Footer></div>
+</div>
+
+@* Render via web assembly as it requires local storage access and renders after the page render *@
+<CookiePolicyNotice @rendermode="InteractiveWebAssembly" />
+
+<div id="blazor-error-ui">
+    <div class="container mx-auto px-5">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+</div>

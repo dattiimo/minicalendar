@@ -1,0 +1,154 @@
+﻿@page "/cal/{CalendarId:guid}/activities/{Id:guid}/edit"
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Forms.Validation
+@using minicalendar.Common.Forms
+@using minicalendar.Common.Alerts
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common
+@inject ICalendarRepository CalendarRepo;
+@inject NavigationManager Nav
+
+<Header>
+    <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
+    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" Title="Save">Save</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
+            <CustomDataAnnotationsValidator/>
+            <div class="my-6">
+                <label for="title" class="block my-2">Title</label>
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
+                <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label class="block my-2">Colour</label>
+                <ColourSelector SelectedColourKind="_model.ColourKind"
+                                                            OnColourKindChanged="(colour) => _model.ColourKind = colour"/>
+            </div>
+            <div class="my-6">
+                <label class="block my-2">Style</label>
+                <DateStyle ColourKind="_model.ColourKind" Content="@_model.Title"
+                                                       Selected="_model.StyleKind"
+                                                       OnSelectedChanged="(style) => _model.StyleKind = style"/>
+            </div>
+            <div class="my-6">
+                <label for="Dates" class="block my-2">Dates</label>
+                <DateEditor Value="_model.Dates" Id="Dates" ValueChanged="HandleStateChangedAsync"/>
+                <ValidationMessage For="() => _model.Dates" id="dates_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <DateList Dates="_model.Dates"/>
+            </div>
+            @if (!AllDatesInRange())
+            {
+                <AlertWarning>Some dates are outside the time range of the calendar and will not be visible on the calendar.</AlertWarning>
+            }
+        </EditForm>
+        <div class="my-20">
+            <ActionDanger Title="Delete" OnClickAsync="HandleDeleteAsync">Remove this activity from the calendar.</ActionDanger>
+        </div>
+    </Container>
+</article>
+
+@code {
+    private EditContext? _editContext;
+    private Activity _model = new();
+    private Calendar _calendar = new();
+
+    [Parameter]
+    public Guid CalendarId { get; set; }
+    
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        
+        _calendar = await CalendarRepo.GetByIdAsync(CalendarId);
+        if (_calendar == Calendar.Empty)
+        {
+            Nav.NavigateTo("notfound");
+            return;
+        }
+        _model = _calendar.Activities.SingleOrDefault(x => x.Id == Id) ?? Activity.Empty;
+        if (_model == Activity.Empty)
+        {
+            Nav.NavigateTo("notfound");
+            return;
+        }
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _editContext?.SetFieldCssClassProvider(new TwValidationCssClassProvider());
+        var isValid = _editContext?.Validate() ?? false;
+        if (isValid)
+        {
+            await HandleValidSubmitAsync();
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        var cal = await CalendarRepo.GetByIdAsync(_calendar.Id);
+        if (cal == Calendar.Empty)
+        {
+            Nav.NavigateTo("notfound");
+            return;
+        }
+        var evt = cal.Activities.SingleOrDefault(x => x.Id == Id);
+        if (evt == null)
+        {
+            Nav.NavigateTo("notfound");
+            return;
+        }
+        evt.PopulateFrom(_model);
+        await CalendarRepo.SaveItemAsync(cal);
+        Nav.NavigateTo($"cal/{cal.Id}/activities/list");
+    }
+
+    private Task HandleCancelAsync()
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}/activities/list");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleStateChangedAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private bool IsInRange(DateOnly date)
+    {
+        return date >= _calendar.StartDate && date <= _calendar.StartDate.AddYears(1);
+    }
+
+    private bool AllDatesInRange()
+    {
+        if (!_model.Dates.Any())
+        {
+            return true;
+        }
+        var max = _model.Dates.Max();
+        var min = _model.Dates.Min();
+        return IsInRange(min) && IsInRange(max);
+    }
+
+    private Task HandleDeleteAsync()
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}/activities/{_model.Id}/delete");
+        return Task.CompletedTask;
+    }
+
+}

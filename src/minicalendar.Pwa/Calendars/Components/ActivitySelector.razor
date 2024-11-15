@@ -1,0 +1,83 @@
+﻿@* @using minicalendar.Common.Calendars *@
+@* @using minicalendar.Common.Calendars.Activities *@
+@* @inject ILogger<ActivitySelector> Logger *@
+@* *@
+@* <form> *@
+@*     <div class="flex flex-col border rounded-md border-gray-300 divide-y text-lg"> *@
+@*         @foreach (var evt in _activities) *@
+@*         { *@
+@*             @if (MultiSelect) *@
+@*             { *@
+@*                     <label class="block p-4 border-l-8 border-b-gray-300   *@
+@*                             first:rounded-tl-md last:rounded-bl-md  cursor-pointer  *@
+@*                             @Style.GetColourStyle("border-l", evt.Activity.ColourKind)  *@
+@*                             @(evt.IsSelected ? "bg-blue-500 text-white" : "")"> *@
+@*                     <input class="me-4" type="checkbox" checked="@evt.IsSelected" *@
+@*                            @onchange="@(async _ => await HandleMultiSelectAsync(evt))"/> *@
+@*                     <span>@evt.Activity.Title</span> *@
+@*                 </label> *@
+@*             } *@
+@*             else *@
+@*             { *@
+@*                 <label class="block p-4 border-l-8 border-b-gray-300  *@
+@*                             first:rounded-tl-md last:rounded-bl-md cursor-pointer *@
+@*                             @Style.GetColourStyle("border-l", evt.Activity.ColourKind)  *@
+@*                             @(evt.IsSelected ? "bg-blue-500 text-white" : "")" *@
+@*                        @onclick="@(async _ => await HandleSingleSelectAsync(evt))"> *@
+@*                     <span>@evt.Activity.Title</span> *@
+@*                 </label> *@
+@*             } *@
+@*         } *@
+@*     </div> *@
+@* </form> *@
+@* *@
+@* @code { *@
+@*     private List<SelectableActivity> _activities = []; *@
+@* *@
+@*     [Parameter] public List<Activity> Activities { get; set; } = []; *@
+@* *@
+@*     [Parameter] public bool MultiSelect { get; set; } *@
+@* *@
+@*     [Parameter] public EventCallback<List<Activity>> OnSelectionChanged { get; set; } *@
+@* *@
+@*     protected override async Task OnParametersSetAsync() *@
+@*     { *@
+@*         _activities = Activities.Distinct().Select(x => new SelectableActivity {Activity = x}).ToList(); *@
+@*         StateHasChanged(); *@
+@* *@
+@*         await base.OnParametersSetAsync(); *@
+@*     } *@
+@* *@
+@*     private async Task HandleMultiSelectAsync(SelectableActivity selectedActivity) *@
+@*     { *@
+@*         // Because we are handling the binding we have to update the model *@
+@*         selectedActivity.IsSelected = !selectedActivity.IsSelected; *@
+@* *@
+@*         // Invoke the callback with the selected activities *@
+@*         var selected = _activities.Where(x => x.IsSelected).Select(x => x.Activity).ToList(); *@
+@*         await OnSelectionChanged.InvokeAsync(selected); *@
+@*     } *@
+@* *@
+@*     private async Task HandleSingleSelectAsync(SelectableActivity selectedActivity) *@
+@*     { *@
+@*         // Because we are handling the binding we have to update the model *@
+@*         // First deselect any previously selected items *@
+@*         var isSelected = !selectedActivity.IsSelected; *@
+@*         foreach (var evt in _activities) *@
+@*         { *@
+@*             evt.IsSelected = false; *@
+@*         } *@
+@* *@
+@*         selectedActivity.IsSelected = isSelected; *@
+@* *@
+@*         // Invoke the callback with the selected activity *@
+@*         await OnSelectionChanged.InvokeAsync([selectedActivity.Activity]); *@
+@*     } *@
+@* *@
+@*     private class SelectableActivity *@
+@*     { *@
+@*         public Activity Activity { get; init; } = new(); *@
+@*         public bool IsSelected { get; set; } *@
+@*     } *@
+@* *@
+@* } *@

@@ -1,0 +1,186 @@
+﻿@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.Core
+@using minicalendar.Common.Bubble
+@inject TimeProvider TimeProvider
+@inject DateDistance DateDistance
+
+@* Rules *@
+@* By default, the date is displayed. *@
+@* If Show Dates is disabled, then dates outside the current month are not shown. *@
+@* If a day has any activity: *@
+@*  - The background style of the first activity is used and the date is displayed if Show Dates is enabled. *@
+@*  - If the first activity has no background: *@
+@*        - An emoji is displayed if the activity starts with an emoji. *@
+@*        - The first two initials of the activity title is displayed. *@
+<div id="day_@Date.ToString("yyyyMMdd")" 
+        class="flex flex-wrap w-full h-full cursor-pointer aspect-square relative group
+            text-slate-400 select-none
+            border-slate-400 first:border-t first:border-s
+            @(IsAlternateDay ? " bg-gray-100" : " bg-white")"
+        @onclick="HandleClickAsync"
+        @onclick:stopPropagation
+        @attributes="Attributes">
+    <div class="w-full h-full flex items-center justify-center @GetBackgroundWithSelected(_firstActivity)">
+        <div class="inline-block @(IsCurrentDay ? "flex rounded rounded-full w-full m-1 border-2 border-red-800 aspect-square place-content-center items-center text-red-800 font-medium" : "")">
+            @switch (GetContentKind(_firstActivity))
+            {
+                case ContentKind.Date:
+                    <span class="text-xs sm:text-sm @GetTextColour(_firstActivity) @(IsCurrentMonth ? "font-normal" : "font-light")">@Date.Day</span>
+                    break;
+                case ContentKind.Empty:
+                    <span class="">&nbsp;</span>
+                    break;
+                case ContentKind.Selected:
+                    <span class="text-white">@Date.Day</span>
+                    break;
+                case ContentKind.Emoji:
+                    <span class="text-2xl">@GetEmoji()</span>
+                    break;
+                case ContentKind.Initials:
+                    <span class="@GetTextColour(_firstActivity)">@GetInitials()</span>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            @* As only the first activity per day is shown, further activities are hidden from the calendar. *@
+            @* Therefore we should show an visual indication that the day contains multiple activities. *@
+            @if (Activities.Count > 1)
+            {
+                <div class="absolute right-1 top-1">
+                    <div class="border-b-4 border-red-800 rounded-full bg-red-800 block w-1 h-1"></div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="absolute bottom-[110%] left-1/4 hidden sm:group-has-[:hover]:block hover:!hidden z-20">
+        <Bubble>
+            <div class="text-lg text-nowrap">@Date.ToString("dddd MMMM d, yyyy")</div>
+            <div class="text-sm text-gray-300">@GetTimeAway()</div>
+            @if (Activities.Any())
+            {
+                <div class="flex flex-row flex-wrap mt-4">
+                    @foreach (var activity in Activities)
+                    {
+                        <div class="px-2 py-1 m-1 flex justify-center text-sm text-nowrap rounded-lg @GetBackground(activity)">@activity.Title</div>
+                    }
+                </div>
+            }
+        </Bubble>
+    </div>
+</div>
+
+@code {
+    private Activity? _firstActivity;
+
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? Attributes { get; set; }
+    [Parameter] public DateOnly Date { get; set; } = DateOnly.MinValue;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public List<Activity> Activities { get; set; } = [];
+    [Parameter] public bool IsAlternateDay { get; set; }
+    [Parameter] public bool IsCurrentDay { get; set; }
+    [Parameter] public bool IsCurrentMonth { get; set; }
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public bool ShowDate { get; set; } = true;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _firstActivity = Activities.FirstOrDefault();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task HandleClickAsync()
+    {
+        await OnClick.InvokeAsync();
+    }
+
+    // Determine the type of content that is displayed in the date.
+    // It can be either selected, empty, a date, or the activity content (emoji or initials) 
+    private ContentKind GetContentKind(Activity? evt)
+    {
+        // Dates that are selected should show the date
+        if (IsSelected)
+        {
+            return ContentKind.Selected;
+        }
+
+        if (evt != null)
+        {
+            switch (evt.StyleKind)
+            {
+                case 0:
+                {
+                    return ContentKind.Empty;
+                }
+                case 1:
+                {
+                    return !string.IsNullOrEmpty(evt.Emoji) ? ContentKind.Emoji : ContentKind.Initials;
+                }
+                case 2:
+                {
+                    return ContentKind.Date;
+                }
+            }
+        }
+
+        // Calendars that have Show Dates disabled only display the date for the current month. 
+        if (!ShowDate && !IsCurrentMonth)
+        {
+            return ContentKind.Empty;
+        }
+
+        // Calendars that have Show Dates enabled show the day by default.
+        return ContentKind.Date;
+    }
+
+    private string GetInitials()
+    {
+        return _firstActivity == null ? string.Empty : string.Concat(_firstActivity.Title.GetInitials().Take(2));
+    }
+
+    private string GetEmoji()
+    {
+        return _firstActivity == null ? string.Empty : _firstActivity.Emoji;
+    }
+
+    private string GetBackground(Activity? activity)
+    {
+        return activity == null ? string.Empty : Style.GetBackgroundStyle(activity.ColourKind);
+    }
+    
+    private string GetBackgroundWithSelected(Activity? activity)
+    {
+        return IsSelected ? "bg-red-800 text-white" : GetBackground(activity);
+    }
+    
+    private string GetTextColour(Activity? evt)
+    {
+        if (evt == null)
+        {
+            return IsCurrentMonth ? "text-gray-900" : "text-gray-400";
+        }
+        return evt.ColourKind == 0 ? "text-gray-900" : "text-white";
+    }
+
+    private string GetTimeAway()
+    {
+        var now = TimeProvider.GetLocalNow().DateTime;
+        if (now.ToDateOnly() == Date)
+        {
+            return "Today";
+        }
+        return DateDistance.TimeAway(now.ToDateOnly(), Date);
+    }
+
+    private enum ContentKind
+    {
+        Empty = 0,
+        Date = 1,
+        Selected = 2,
+        Emoji = 3,
+        Initials = 4
+    }
+
+}

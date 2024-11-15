@@ -1,0 +1,42 @@
+﻿@inject IViewOrientationService ViewOrientationService
+
+<div class="view-@_orientation.ToString().ToLower()">
+    @ChildContent
+</div>
+
+@code {
+    private ViewOrientationType _orientation = ViewOrientationType.Portrait;
+
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public ViewOrientationType Orientation { get; set; } = ViewOrientationType.Default;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Orientation == ViewOrientationType.Default)
+            {
+                _orientation = await ViewOrientationService.GetOrientationAsync();
+                if (_orientation == ViewOrientationType.Default)
+                {
+                    _orientation = ViewOrientationType.Portrait;
+                }
+            }
+            else
+            {
+                _orientation = Orientation;
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (Orientation != ViewOrientationType.Default)
+        {
+            _orientation = Orientation;
+        }
+        return base.OnParametersSetAsync();
+    }
+
+}

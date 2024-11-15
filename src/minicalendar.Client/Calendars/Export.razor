@@ -1,0 +1,27 @@
+﻿@page "/cal/export"
+@using minicalendar.Common.Calendars
+@using System.Text.Json
+@using minicalendar.Common.Container
+@inject ICalendarRepository CalendarRepository
+
+<Container>
+    <InputTextArea @bind-Value="@_data" class="w-full h-64 bg-gray-200"></InputTextArea>
+</Container>
+
+@code {
+    private string _data = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+        var cals = await CalendarRepository.GetAllAsync();
+
+        var data = JsonSerializer.Serialize(cals);
+        _data = data;
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}
