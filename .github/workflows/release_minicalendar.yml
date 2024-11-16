@@ -32,6 +32,7 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+          retention-days: 7
 
   deploy:
     runs-on: ubuntu-latest
