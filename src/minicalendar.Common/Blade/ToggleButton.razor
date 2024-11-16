@@ -1,0 +1,17 @@
+﻿<button class="py-2 px-4 m-2 flex justify-center content-center items-center border rounded-lg 
+        @(IsActive ? "text-green-400 border-green-400" : "text-white border-white")" 
+        type="button" @onclick="HandleClick">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public string GroupName { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+}

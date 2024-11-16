@@ -1,0 +1,109 @@
+﻿@inject NavigationManager Nav
+
+@using minicalendar.Common.Calendars.Activities
+
+<aside class="fixed bottom-0 w-full bg-gray-700 text-gray-300 z-50 rounded-t-lg @(_isExpanded ? "expanded" : "collapsed")
+        shadow-[0px_-8px_12px_-6px_rgba(55,_65,_81,_0.5)]">
+    <div class="container mx-auto px-4 pt-4 sm:pt-16 pb-16 overflow-y-auto max-h-32 expand:max-h-64 sm:max-h-96">
+        <div class="flex flex-wrap justify-center expand:justify-stretch expand:sm:justify-center expand:flex-col expand:sm:flex-row sm:flex-row sm:flex-wrap w-full">
+
+            @* Create new activity button *@
+            <button class="px-3 py-2 my-2 sm:mx-2 rounded min-w-10 flex justify-center items-center text-sm sm:text-base select-none
+                    border-2 border-gray-900 
+                    bg-gray-900 text-green-400 
+                    ring-gray-900 ring-2" 
+                    type="button"
+                    @onclick="HandleCreateClickAsync"
+                    >
+                <PlusIcon class="size-6"/>
+                <span class="ms-2 hidden sm:block">Create new</span>
+            </button>
+
+            @foreach (var activity in Activities)
+            {
+                <button class="px-3 py-2 my-2 sm:mx-2 rounded min-w-10 flex justify-center text-sm sm:text-base select-none
+                    sm:max-w-48 text-clip whitespace-nowrap overflow-hidden sm:justify-start
+                    border-2 @(IsSelected(activity.Dates) ? "border-red-800 " : activity.GetColourStyle("border", activity.ColourKind))
+                    @activity.GetBackgroundStyle(activity.ColourKind)
+                    @activity.GetColourStyle("ring", activity.ColourKind) ring-2"
+                        type="button"
+                        @onclick="async () => await HandleSelectedClickAsync(activity)">
+                    <span class="hidden expand:inline-block sm:inline-block text-base">@activity.Title</span>
+                    <span class="inline-block expand:hidden sm:hidden">@activity.GetAbbreviatedTitle()</span>
+                </button>
+            }
+
+            @if (Activities.Any())
+            {
+                @* Edit activities button *@
+                <div class="justify-end px-2-3 py-2 sm:mx-2 my-2 w-full hidden expand:flex sm:flex">
+                    <a href="cal/@CalendarId/activities/list" class="flex justify-center hover:text-green-400">
+                        <button type="button" class="me-2"
+                                aria-label="Edit activities"
+                                title="Edit activities">
+                            <PencilSquareIcon class="size-6"/>
+                        </button>
+                        <span>Edit activities</span>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="font-light text-sm px-3 py-2 sm:mx-2 sm:ms-8">You have no existing activities. Add a new one for the chosen dates.</p>
+            }
+
+            @* Show more/less *@
+            @* <div class="flex justify-start px-2-3 py-2 m-2 w-full sm:hidden"> *@
+            @*     <button type="button" class="me-2" *@
+            @*             aria-label="Show more" *@
+            @*             title="Show more" *@
+            @*             @onclick="HandleExpandClickAsync" *@
+            @*     >SHOW @(_isExpanded ? "LESS" : "MORE")</button> *@
+            @* </div> *@
+
+        </div>
+    </div>
+    
+    
+</aside>
+
+@code {
+    private bool _isExpanded = true;
+    //private List<DateOnly> _selectedDates = [];
+    [Parameter] public EventCallback<ActivityButtonActionEvent> OnSelected { get; set; }
+    [Parameter] public EventCallback<ActivityButtonActionEvent> OnCreate { get; set; }
+
+    [Parameter] public Guid CalendarId { get; set; }
+    [Parameter] public List<Activity> Activities { get; set; } = [];
+    [Parameter] public List<DateOnly> SelectedDates { get; set; } = [];
+
+
+    private bool IsSelected(List<DateOnly> dates)
+    {
+        return SelectedDates.Any() && SelectedDates.All(dates.Contains);
+    }
+    
+    private async Task HandleSelectedClickAsync(Activity activity)
+    {
+        await OnSelected.InvokeAsync(new ActivityButtonActionEvent
+        {
+            Id = activity.Id
+        });
+    }
+
+    private Task HandleExpandClickAsync()
+    {
+        _isExpanded = !_isExpanded;
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCreateClickAsync()
+    {
+        await OnCreate.InvokeAsync();
+    }
+    
+    public class ActivityButtonActionEvent
+    {
+        public Guid Id { get; init; }
+    }
+}

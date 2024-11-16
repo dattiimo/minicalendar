@@ -1,0 +1,437 @@
+﻿@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.Core
+@inject TrackFactory TrackFactory;
+@inject TimeProvider TimeProvider
+@inject DateDistance DateDistance
+
+@* Calendar can be rendered in portrait (default) or landscape 
+The whole calendar is laid out in a 2x2 grid.
+The calendar dates are rendered in cell B2.
+The position of the month labels and day of week labels switches depending
+on if the layout is landscape or portrait *@
+
+<div class="grid grid-cols-2 grid-cols-[max-content_1fr]">
+    @* Day of week labels M, T, W... *@
+    <div class="text-center text-xs grid
+            vland:grid-rows-7 vland:grid-flow-col vland:auto-cols-fr vland:row-start-2 vland:col-start-1 
+            vport:grid-cols-7 vport:col-start-2">
+        @foreach (var dayOfWeek in GetDaysOfWeek())
+        {
+            var css = CurrentDate >= FromDate &&
+                      CurrentDate <= _toDate &&
+                      CurrentDate?.DayOfWeek == dayOfWeek ? "text-red-800 font-bold" : string.Empty;
+            <div class="p-2 @css">@dayOfWeek.ToString()[..1]</div>
+        }
+    </div>
+    
+    @* Month labels JAN, FEB, MAR... *@
+    <div class="uppercase text-xs grid vland:col-start-2 vland:row-start-1 vland:grid-flow-col vport:row-start-2">
+        @for (var date = FromDate; date < _toDate; date = date.AddMonths(1))
+        {
+            var css = CurrentDate >= FromDate && CurrentDate <= _toDate && CurrentDate?.Month == date.Month
+                ? "text-red-800 font-bold"
+                : string.Empty;
+            <span class="p-2 @css vland:col-span-{GetMonthWeekSpan(date)} vport:row-span-{GetMonthWeekSpan(date)} 
+                  vport:[writing-mode:vertical-lr] vport:[text-orientation:upright]">
+                <span>@date.ToString("MMM")</span>
+            </span>
+        }
+    </div>
+    
+    @* Calendar dates *@
+    <div class="vland:col-start-2 vland:row-start-2">
+        <div class="divide-y divide-x divide-slate-400 border-e border-b border-slate-400
+                vland:grid vland:grid-rows-7 vland:grid-flow-col vland:auto-cols-fr 
+                vport:grid vport:grid-cols-7">
+            @for (var date = _termStart; date <= _termFinish; date = date.AddDays(1))
+            {
+                var day = date;
+                // render empty cells for out of bounds dates
+                if (date < FromDate || date >= _toDate)
+                {
+                    <div class="border-slate-400 first:border-t first:border-s"></div>
+                }
+                else
+                {
+                    var activities = Activities.Where(x => x.Dates.Contains(day))
+                        .Where(x => x.IsShown).ToList();
+                    var activity = activities.FirstOrDefault();
+                    var options = new CalendarDayOptions(day, CurrentDate, _track)
+                    {
+                        IsSelected = _selectedDates.Contains(day),
+                        ShowDate = IsDateShown(day)
+                    };
+                    // var isAlternate = _track?.IsAlternate(day) ?? false;
+                    // var isCurrentDay = day == CurrentDate;
+                    // var isCurrentMonth = CurrentDate?.IsSameMonthAndYear(day) ?? false;
+                    @*               IsCurrentMonth="@(CurrentDate?.IsSameMonthAndYear(day) ?? false)" *@
+                    @* <YearSpanDate Date="day" Activities="activities"  *@
+                    @*               IsAlternateDay="_track?.IsAlternate(day) ?? false" *@
+                    @*               IsCurrentDay="day == CurrentDate" *@
+                    @*               IsCurrentMonth="@(CurrentDate?.IsSameMonthAndYear(day) ?? false)" *@
+                    @*               IsSelected="SelectedDates.Contains(day)" *@
+                    @*               ShowDate="IsDateShown(day)" *@
+                    @*               OnClick="() => HandleDaySelectAsync(day)"></YearSpanDate> *@
+                    
+                    
+                    @* Rules *@
+                    @* By default, the date is displayed. *@
+                    @* If Show Dates is disabled, then dates outside the current month are not shown. *@
+                    @* If a day has any activity: *@
+                    @*  - The background style of the first activity is used and the date is displayed if Show Dates is enabled. *@
+                    @*  - If the first activity has no background: *@
+                    @*        - An emoji is displayed if the activity starts with an emoji. *@
+                    @*        - The first two initials of the activity title is displayed. *@
+                    <div id="day_@day.ToString("yyyyMMdd")" 
+                            class="flex flex-wrap w-full h-full cursor-pointer aspect-square relative group
+                                text-slate-400 select-none
+                                border-slate-400 first:border-t first:border-s
+                                @(options.IsAlternate ? " bg-gray-100" : " bg-white")"
+                            @onclick="() => HandleDaySelectAsync(day)"
+                            @onclick:stopPropagation>
+                        <div class="w-full h-full flex items-center justify-center @GetBackgroundWithSelected(activity, options)">
+                            <div class="inline-block @(options.IsCurrentDay ? "flex rounded rounded-full w-full m-1 border-2 border-red-800 aspect-square place-content-center items-center text-red-800 font-medium" : "")">
+                                @switch (GetContentKind(activity, options))
+                                {
+                                    case ContentKind.Date:
+                                        <span class="text-xs sm:text-sm @GetTextColour(activity, options) @(options.IsCurrentMonth ? "font-normal" : "font-light")">@day.Day</span>
+                                        break;
+                                    case ContentKind.Empty:
+                                        <span class="">&nbsp;</span>
+                                        break;
+                                    case ContentKind.Selected:
+                                        <span class="text-white">@day.Day</span>
+                                        break;
+                                    case ContentKind.Emoji:
+                                        <span class="text-2xl">@GetEmoji(activity)</span>
+                                        break;
+                                    case ContentKind.Initials:
+                                        <span class="@GetTextColour(activity, options)">@GetInitials(activity)</span>
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+                                @* As only the first activity per day is shown, further activities are hidden from the calendar. *@
+                                @* Therefore we should show an visual indication that the day contains multiple activities. *@
+                                @if (activities.Count > 1)
+                                {
+                                    <div class="absolute right-1 top-1">
+                                        <div class="border-b-4 border-red-800 rounded-full bg-red-800 block w-1 h-1"></div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="absolute bottom-[110%] left-1/4 hidden sm:group-has-[:hover]:block hover:!hidden z-20">
+                        @* <Bubble> *@
+                        <div class="p-4 text-white bg-gray-700 rounded-xl ring-2 ring-gray-700 border-2 border-green-400 shadow-lg shadow-gray-500">
+                            <div class="text-lg text-nowrap">@day.ToString("dddd MMMM d, yyyy")</div>
+                                <div class="text-sm text-gray-300">@GetTimeAway(day)</div>
+                                @if (activities.Any())
+                                {
+                                    <div class="flex flex-row flex-wrap mt-4">
+                                        @foreach (var act in activities)
+                                        {
+                                            <div class="px-2 py-1 m-1 flex justify-center text-sm text-nowrap rounded-lg @GetBackground(act)">@act.Title</div>
+                                        }
+                                    </div>
+                                }
+                                @* </Bubble> *@
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private DateOnly _termStart = DateOnly.MinValue;
+    private DateOnly _termFinish = DateOnly.MinValue;
+    private ITrack? _track;
+    private DateOnly _toDate;
+    private readonly HashSet<DateOnly> _selectedDates = [];
+
+    [Parameter]
+    public DateOnly FromDate { get; set; }
+
+    [Parameter]
+    public DateOnly? CurrentDate { get; set; }
+
+    // [Parameter]
+    // public List<DateOnly> SelectedDates { get; set; } = [];
+
+    [Parameter]
+    public List<Activity> Activities { get; set; } = [];
+
+    [Parameter]
+    public bool? ShowAllDates { get; set; } = false;
+    
+    [Parameter]
+    public bool EnableSprint { get; set; }
+
+    [Parameter]
+    public DateOnly? SprintStartDate { get; set; }
+
+    [Parameter]
+    public int? SprintInterval { get; set; }
+
+    [Parameter]
+    public EventCallback<DateSelectedEvent> OnDateSelectAsync { get; set; }
+
+    [Parameter]
+    public bool Editable { get; set; } = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _toDate = FromDate.AddYears(1);
+        _termStart = FromDate.GetPreviousDayOfWeek(DayOfWeek.Monday);
+        _termFinish = _toDate.GetNextDayOfWeek(DayOfWeek.Sunday);
+        _track = TrackFactory.CreateTrack(EnableSprint, SprintStartDate, SprintInterval);
+    }
+
+    public Task ClearSelectedAsync()
+    {
+        _selectedDates.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleDaySelectAsync(DateOnly date)
+    {
+        if (!Editable)
+        {
+            return;
+        }
+
+        if (!_selectedDates.Add(date))
+        {
+            _selectedDates.Remove(date);
+        }
+
+        var activities = Activities.Where(x => x.Dates.Contains(date));
+
+        await OnDateSelectAsync.InvokeAsync(new DateSelectedEvent(date, _selectedDates.ToArray(), activities.ToArray()));
+    }
+
+    private bool IsCurrentMonth(DateOnly date)
+    {
+        if (CurrentDate == null)
+        {
+            return false;
+        }
+        return date.Year == CurrentDate?.Year && date.Month == CurrentDate?.Month;
+    }
+
+    private bool IsDateShown(DateOnly date)
+    {
+        return ShowAllDates == true || 
+               _selectedDates.Contains(date) || 
+               (CurrentDate != null && date.IsSameMonthAndYear(CurrentDate.Value));
+    }
+
+    private string GetCellCssClass(DateOnly date, Activity? evt)
+    {
+        var css = Editable ? "cursor-pointer" : "cursor-default";
+
+        // Selected dates
+        if (_selectedDates.Contains(date))
+        {
+            css += " bg-red-800 text-white";
+            return css;
+        }
+
+        // Dates that have activities
+        if (evt != null)
+        {
+            css += " " + Style.GetBackgroundStyle(evt.ColourKind);
+            return css;
+        }
+
+        // All other dates
+        css += _track?.IsAlternate(date) == true ? " bg-gray-100" : " bg-white";
+
+        if (CurrentDate != null && date.IsSameMonthAndYear(CurrentDate.Value))
+        {
+            css += " ";
+        }
+        else
+        {
+            css += " text-slate-400 font-light";
+            
+        }
+
+        return css;
+    }
+
+    
+    private string GetDayCssClass(DateOnly date, Activity? evt)
+    {
+        var css = "";
+
+        if (date == CurrentDate)
+        {
+            if (!_selectedDates.Contains(date))
+            {
+                css += "flex rounded rounded-full w-full m-1 border-2 border-red-800 aspect-square place-content-center items-center text-red-800 font-medium";
+            }
+        }
+
+        return css;
+    }
+
+    private int GetMonthWeekSpan(DateOnly date)
+    {
+        var startOfMonth = new DateOnly(date.Year, date.Month, 1);
+        var days = startOfMonth.DayOfWeek switch
+        {
+            DayOfWeek.Monday => 0,
+            DayOfWeek.Tuesday => 6,
+            DayOfWeek.Wednesday => 5,
+            DayOfWeek.Thursday => 4,
+            DayOfWeek.Friday => 3,
+            DayOfWeek.Saturday => 2,
+            DayOfWeek.Sunday => 1,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+        var totalDays = (decimal)(endOfMonth.Day - days);
+        return (int)Math.Ceiling(totalDays / 7M);
+    }
+
+    private DayOfWeek[] GetDaysOfWeek()
+    {
+        return
+        [
+            DayOfWeek.Monday,
+            DayOfWeek.Tuesday,
+            DayOfWeek.Wednesday,
+            DayOfWeek.Thursday,
+            DayOfWeek.Friday,
+            DayOfWeek.Saturday,
+            DayOfWeek.Sunday
+        ];
+    }
+
+    private int GetNumberOfDaysFromMonday(DateOnly date)
+    {
+        var days = date.DayOfWeek switch
+        {
+            DayOfWeek.Monday => 0,
+            DayOfWeek.Tuesday => 1,
+            DayOfWeek.Wednesday => 2,
+            DayOfWeek.Thursday => 3,
+            DayOfWeek.Friday => 4,
+            DayOfWeek.Saturday => 5,
+            DayOfWeek.Sunday => 6,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        return days;
+    }
+    
+    private string GetBackground(Activity? activity)
+    {
+        return activity == null ? string.Empty : Style.GetBackgroundStyle(activity.ColourKind);
+    }
+    
+    private string GetBackgroundWithSelected(Activity? activity, CalendarDayOptions options)
+    {
+        return options.IsSelected ? "bg-red-800 text-white" : GetBackground(activity);
+    }
+    
+    private string GetTextColour(Activity? evt, CalendarDayOptions options)
+    {
+        if (evt == null)
+        {
+            return options.IsCurrentMonth ? "text-gray-900" : "text-gray-400";
+        }
+        return evt.ColourKind == 0 ? "text-gray-900" : "text-white";
+    }
+    
+    // Determine the type of content that is displayed in the date.
+    // It can be either selected, empty, a date, or the activity content (emoji or initials) 
+    private ContentKind GetContentKind(Activity? evt, CalendarDayOptions options)
+    {
+        // Dates that are selected should show the date
+        if (options.IsSelected)
+        {
+            return ContentKind.Selected;
+        }
+
+        if (evt != null)
+        {
+            switch (evt.StyleKind)
+            {
+                case 0:
+                {
+                    return ContentKind.Empty;
+                }
+                case 1:
+                {
+                    return !string.IsNullOrEmpty(evt.Emoji) ? ContentKind.Emoji : ContentKind.Initials;
+                }
+                case 2:
+                {
+                    return ContentKind.Date;
+                }
+            }
+        }
+
+        // Calendars that have Show Dates disabled only display the date for the current month. 
+        if (options is {ShowDate: false, IsCurrentMonth: false})
+        {
+            return ContentKind.Empty;
+        }
+
+        // Calendars that have Show Dates enabled show the day by default.
+        return ContentKind.Date;
+    }
+    
+    private string GetEmoji(Activity? activity)
+    {
+        return activity == null ? string.Empty : activity.Emoji;
+    }
+
+    private string GetInitials(Activity? activity)
+    {
+        return activity == null ? string.Empty : string.Concat(activity.Title.GetInitials().Take(2));
+    }
+    
+    private string GetTimeAway(DateOnly date)
+    {
+        var now = TimeProvider.GetLocalNow().DateTime;
+        if (now.ToDateOnly() == date)
+        {
+            return "Today";
+        }
+        return DateDistance.TimeAway(now.ToDateOnly(), date);
+    }
+    
+    private class CalendarDayOptions(DateOnly day, DateOnly? today, ITrack? track)
+    {
+        public bool IsSelected { get; set; }
+        public bool IsAlternate { get; init; } = track?.IsAlternate(day) ?? false;
+        public bool IsCurrentDay { get; init; } = day == today;
+        public bool IsCurrentMonth { get; init; } = today?.IsSameMonthAndYear(day) ?? false;
+        public bool ShowDate { get; init; }
+    }
+    
+    private enum ContentKind
+    {
+        Empty = 0,
+        Date = 1,
+        Selected = 2,
+        Emoji = 3,
+        Initials = 4
+    }
+
+    public class DateSelectedEvent(DateOnly date, DateOnly[] allDates, Activity[] activities)
+    {
+        public DateOnly SelectedDate { get; init; } = date;
+        public DateOnly[] AllDates { get; init; } = allDates;
+        public Activity[] Activities { get; init; } = activities;
+    }
+}

@@ -1,0 +1,41 @@
+﻿@*
+    Bubble
+    Wraps it's content in a "bubble" used for pop-ups, toasts etc.
+    When `Closable` is true, includes a close icon in the top left.
+    When `Title` is set then renders the string as the bubble heading.
+*@
+@using minicalendar.Common.Icons
+
+<div class="p-4 text-white bg-gray-700 rounded-xl ring-2 ring-gray-700 border-2 border-green-400 shadow-lg shadow-gray-500 @Class">
+    @if (Closable || !string.IsNullOrEmpty(Title))
+    {
+        <div class="flex justify-between mb-2 sm:mb-4">
+            <div class="text-lg text-nowrap">@Title</div>
+            @if (Closable)
+            {
+                <div class="justify-end flex justify-end">
+                    <button class="text-white hover:text-green-500"
+                            type="button" aria-label="Close" title="Close"
+                            @onclick="HandleClickAsync"
+                            @onclick:stopPropagation><XMarkIcon class="size-6"></XMarkIcon></button>
+                </div>
+            }
+        </div>
+    }
+    <div class="">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCloseAsync { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool Closable { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        await OnCloseAsync.InvokeAsync();
+    }
+}

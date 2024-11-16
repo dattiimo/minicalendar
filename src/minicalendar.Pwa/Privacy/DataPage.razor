@@ -1,0 +1,74 @@
+﻿@page "/privacy/data"
+@using minicalendar.Common.Forms
+@using minicalendar.Common.Privacy.CookiePolicy
+@* @inject DataPolicy DataPolicy *@
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+
+<Header>
+    <div></div>
+    <div><PrimaryAction OnClickAsync="HandleDoneAsync" Title="Done">Done</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        <h1 class="text-4xl mb-2 font-medium">Cookie Preferences</h1>
+        <div class="text-base mb-12">
+            <p class="text-lg">We use different types of cookies to optimize your experience on our website.
+                You can choose which categories you'd like to permit.</p>
+        </div>
+
+        <div class="mb-12 flex flex-row justify-between">
+            <div class="grow">
+                <label class="text-2xl">Functional Cookies</label>
+                <p class="text-gray-500 text-base md:text-lg">These cookies are essential for the website to function properly and cannot be
+                    switched off in our systems. They are usually only set in response to actions made by you, such as
+                    setting your privacy preferences, or creating a new calendar.</p>
+            </div>
+            <ToggleSwitch Class="ms-4 mt-4" Disabled="true" @bind-Value="_functionalCookies" />
+        </div>
+        <div class="mb-12 flex flex-row justify-between">
+            <div class="grow">
+                <label class="text-2xl">Analytics Cookies</label>
+                <p class="text-gray-500 text-lg">These cookies help us understand how visitors interact with our website
+                    by collecting and reporting information anonymously. They allow us to improve the site's
+                    performance and features.</p>
+            </div>
+            <span class="ms-4 mt-4">
+                <AnalyticalCookiesPreferenceSwitch />
+            </span>
+        </div>
+
+        <div class="my-20">
+            <ActionDanger Title="Delete all data" Text="Delete all data"
+                          OnClickAsync="@(() => Nav.NavigateTo("privacy/data/delete"))">Remove all app data stored on the device.</ActionDanger>
+        </div>
+    </Container>
+</article>
+
+@code {
+    //private bool AcceptFunctional { get; set; } = true;
+    //private bool AcceptAnalytics { get; set; } = true;
+    private bool _functionalCookies = true;
+    
+    private Task HandleDoneAsync()
+    {
+        // if (!DataPolicy.Accepted)
+        // {
+        //     await DataPolicy.AcceptPolicy();
+        // }
+        //
+        // if (AcceptAnalytics)
+        // {
+        //     await DataPolicy.AcceptAnalytics();
+        // }
+        // else
+        // {
+        //     await DataPolicy.RejectAnalytics();
+        // }
+        //await Nav.NavigateToAsync("/", forceLoad: true);
+        Nav.NavigateTo("/", forceLoad: true);
+        return Task.CompletedTask;
+    }
+
+}

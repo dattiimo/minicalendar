@@ -1,0 +1,30 @@
+﻿@page "/cal/import"
+@using System.Text.Json
+@using minicalendar.Common.Calendars
+@inject ICalendarRepository CalendarRepository
+@inject NavigationManager Nav
+
+<Container>
+    <InputTextArea @bind-Value="@_data" class="w-full min-h-64 bg-gray-200"></InputTextArea>
+    <PrimaryButton OnClickAsync="HandleImport">Import</PrimaryButton>
+</Container>
+
+@code {
+    private string _data = string.Empty;
+
+    private async Task HandleImport()
+    {
+        var calsToImport = JsonSerializer.Deserialize<List<Calendar>>(_data);
+        if (calsToImport == null || calsToImport.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var cal in calsToImport)
+        {
+            await CalendarRepository.SaveItemAsync(cal);
+        }
+
+        Nav.NavigateTo("/");
+    }
+}

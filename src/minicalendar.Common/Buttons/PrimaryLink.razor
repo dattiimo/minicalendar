@@ -1,0 +1,9 @@
+﻿@inherits ComponentBase
+
+<a href="@Uri" class="underline hover:no-underline text-blue-500">@ChildContent</a>
+
+@code {
+    [Parameter] public string Uri { get; set; } = "#";
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

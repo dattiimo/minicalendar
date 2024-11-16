@@ -1,0 +1,29 @@
+﻿<header class="body-font">
+    <div class="mt-2 flex flex-wrap justify-between align-center">
+        @* Branding *@
+        <div class="lg:order-1">
+            <a href="/" class="flex items-center">
+                <img src="images/icon-192.png" class="max-w-12 sm:max-w-16" alt="logo" title="mini calendar"/>
+                @if (ShowName)
+                {
+                    <span class="ml-2 text-xl text-gray-600 hover:text-gray-800 font-medium">mini calendar</span>
+                }
+            </a>
+        </div>
+        @* Call to action *@
+        <div class="lg:order-3 pe-2 lg:pe-2 flex items-center">
+            <a href="@ActionUri" class="inline-flex items-center bg-gray-200 text-base py-2 px-4 focus:outline-none hover:bg-green-300 rounded rounded-lg">
+                <span class="">@ActionText</span>
+                <ArrowRightIcon class="hidden sm:block w-4 h-4 ms-2" />
+            </a>
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter] public bool ShowName { get; set; }
+
+    [Parameter] public string ActionText { get; set; } = "Launch App";
+
+    [Parameter] public string ActionUri { get; set; } = "https://my.minicalendar.app";
+}

@@ -1,0 +1,7 @@
+﻿<div class="container mx-auto px-4">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+}

@@ -1,0 +1,19 @@
+@using minicalendar.Common.Container
+
+<header class="w-full shadow-md shadow-gray-400
+        @(IsFixed ? "fixed top-0 left-0 z-40" : "mb-4 sm:mb-8") 
+        @(IsActive ? "bg-green-300 text-gray-900" : "bg-gray-900 text-white")">
+    <Container>
+        <div class="text-xs sm:text-sm md:text-lg">
+            <div class="flex justify-between items-center min-h-16">
+                @ChildContent
+            </div>
+        </div>
+    </Container>
+</header>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public bool IsFixed { get; set; } = true;
+}

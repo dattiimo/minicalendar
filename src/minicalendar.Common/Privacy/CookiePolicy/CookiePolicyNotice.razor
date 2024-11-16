@@ -1,0 +1,74 @@
+﻿@* 
+The TailWind version of the cookie policy notice for the main website. 
+It has to be in the Web.Client project as it is executed after render via script 
+due to it retrieving it's data from local storage.  
+*@
+@using minicalendar.Common.Buttons
+@inject ICookiePolicyManager CookiePolicy
+@inject NavigationManager Nav
+
+@if (ShowWarning)
+{
+    <div class="fixed bottom-0 w-full bg-gray-200 py-4 px-4 flex items-center z-50 justify-between flex-col sm:flex-row">
+        <div class="md:px-2">
+            <p class="my-2">We use optional cookies for analytics to help us improve features and services.
+                If you reject optional cookies only essential cookies necessary for the service to function will be used.
+                You may change your selection at any time.
+            </p>
+            <p class="my-2">
+                <PrimaryLink Uri="privacy/cookie-preferences">Cookie Preferences</PrimaryLink>
+            </p>
+        </div>
+        <div class="flex flex-col justify-end md:px-2 w-full min-w-fit sm:w-auto">
+            <PrimaryButton OnClickAsync="HandleAcceptClickAsync">Accept all</PrimaryButton>
+            <PrimaryButton OnClickAsync="HandleRejectClickAsync">Reject non-essential</PrimaryButton>
+            <PrimaryButton OnClickAsync="HandleManageClickAsync">Manage cookies</PrimaryButton>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowWarning { get; set; }
+ 
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+//    protected override async Task OnParametersSetAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+        
+        //if (firstRender && !Nav.Uri.Equals("privacy/cookie-preferences", StringComparison.OrdinalIgnoreCase))
+        if (!Nav.Uri.Equals("privacy/cookie-preferences", StringComparison.OrdinalIgnoreCase))
+        {
+            var hasAccepted = await CookiePolicy.HasAcceptedFunctionalCookiesAsync();
+            if (!hasAccepted) {
+                ShowWarning = true;
+                StateHasChanged();
+            }
+        }
+        //await base.OnAfterRenderAsync(firstRender);
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task HandleAcceptClickAsync()
+    {
+        await CookiePolicy.AcceptAllCookiesAsync();
+        ShowWarning = false;
+    }
+
+    private async Task HandleRejectClickAsync()
+    {
+        await CookiePolicy.RejectAllCookiesAsync();
+        ShowWarning = false;
+    }
+
+    private Task HandleManageClickAsync()
+    {
+        Nav.NavigateTo("privacy/cookie-preferences");
+        return Task.CompletedTask;
+    }
+}

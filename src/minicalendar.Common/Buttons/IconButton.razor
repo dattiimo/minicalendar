@@ -1,0 +1,29 @@
+﻿@inject NavigationManager Nav
+
+<button class="@Class mx-2 @(IsActive ? "text-green-500 hover:text-gray-500" : "text-gray-500 hover:text-green-500")"
+        type="button" aria-label="@Title" title="@Title"
+        @onclick="HandleClickAsync"
+        @onclick:stopPropagation>
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public string Url { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        if (string.IsNullOrEmpty(Url))
+        {
+            await OnClick.InvokeAsync();
+        }
+        else
+        {
+            Nav.NavigateTo(Url);
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿@inherits ComponentBase
+@inject NavigationManager Nav
+
+<button class="mx-2 @Class @(IsActive ? "text-gray-900 hover:text-white" : "text-white hover:text-green-400")"
+        type="button" aria-label="@Title" title="@Title"
+        @onclick="HandleClickAsync">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public string Url { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        if (string.IsNullOrEmpty(Url))
+        {
+            await OnClick.InvokeAsync();
+        }
+        else
+        {
+            Nav.NavigateTo(Url);
+        }
+    }
+}

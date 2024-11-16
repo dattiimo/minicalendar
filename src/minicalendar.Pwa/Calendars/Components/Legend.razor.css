@@ -1,0 +1,13 @@
+.legend-style {
+    display: inline-block;
+    height: 1.2rem;
+    width: 1.2rem;
+}
+
+@media all and (orientation:portrait) {
+     .legend-content {
+         flex-direction: column!important;
+     }
+}
+
+

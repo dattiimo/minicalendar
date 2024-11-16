@@ -1,0 +1,128 @@
+﻿@page "/cal/{id:guid}/edit"
+@using System.ComponentModel.DataAnnotations
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Forms.Validation
+@using minicalendar.Common.Forms
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+@inject ICalendarRepository CalendarRepo
+
+<Header>
+    <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
+    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" Title="Save">Save</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
+            <CustomDataAnnotationsValidator />
+            <div class="my-6">
+                <label for="title" class="block my-2">Title</label>
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label for="description" class="block my-2">Description (optional)</label>
+                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+            <div class="my-6">
+                <label for="startDate" class="block my-2">Start On</label>
+                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <ValidationMessage For="() => _model.StartDate" id="startDate_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
+
+            <Toggle Title="Sprint Planning" @bind-Value="_model.EnableSprint">Enable sprint tracks on the calendar.</Toggle>
+            @if (_model.EnableSprint)
+            {
+                <div class="my-4 ms-8">
+                    <label for="sprintStartDate" class="block my-2">Start Sprint On</label>
+                    <InputDate id="sprintStartDate" @bind-Value="_model.SprintStartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                    <ValidationMessage For="() => _model.SprintStartDate" id="sprintStartDate_feedback" class="mx-2 py-1 text-red-800"/>
+                </div>
+                <div class="my-4 ms-8">
+                    <label for="sprintInterval" class="block my-2">Number of days</label>
+                    <InputNumber id="sprintInterval" @bind-Value="_model.SprintInterval" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                    <ValidationMessage For="() => _model.SprintInterval" id="sprintInterval_feedback" class="mx-2 py-1 text-red-800"/>
+                </div>
+            }
+        </EditForm>
+
+        <div class="my-20">
+            <FormAction Title="Activities" Text="Edit activities" OnClickAsync="HandleEditClickAsync">Edit the calendar activities.</FormAction>
+            <FormAction Title="Duplicate calendar" Text="Duplicate" OnClickAsync="HandleDuplicateClickAsync">Create a duplicate of this calendar and all of it's activities.</FormAction>
+            <ActionDanger Title="Delete calender" Text="Delete calendar" OnClickAsync="HandleDeleteClickAsync">Delete this calendar and all of it's activities.</ActionDanger>
+        </div>
+    </Container>
+</article>
+
+@code {
+    private EditContext? _editContext;
+    private Calendar _model = new();
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var data = await CalendarRepo.GetByIdAsync(Id);
+        if (data == Calendar.Empty)
+        {
+            Nav.NavigateTo($"notfound");
+            return;
+        }
+        _model = data;
+        // The model has changed so the EditContext needs updating.
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _editContext?.SetFieldCssClassProvider(new TwValidationCssClassProvider());
+        var isValid = _editContext?.Validate() ?? false;
+        if (isValid)
+        {
+            await HandleValidSubmitAsync();
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        var data = await CalendarRepo.GetByIdAsync(Id);
+        data.PopulateFrom(_model);
+        await CalendarRepo.SaveItemAsync(data);
+        Nav.NavigateTo($"cal/{_model.Id}");
+    }
+
+    private Task HandleCancelAsync()
+    {
+        Nav.NavigateTo($"cal/{_model.Id}");
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleDuplicateClickAsync()
+    {
+        var cal = _model.Duplicate();
+        await CalendarRepo.SaveItemAsync(cal);
+        Nav.NavigateTo($"cal/{cal.Id}");
+    }
+
+    private Task HandleEditClickAsync()
+    {
+        Nav.NavigateTo($"cal/{Id}/activities/list");
+        return Task.CompletedTask;
+    }
+    
+    private Task HandleDeleteClickAsync()
+    {
+        Nav.NavigateTo($"cal/{Id}/delete");
+        return Task.CompletedTask;
+    }
+
+}

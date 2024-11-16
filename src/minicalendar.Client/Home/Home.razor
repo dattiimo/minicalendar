@@ -1,0 +1,22 @@
+﻿@page "/"
+@using minicalendar.Client.Layout
+@layout HomeLayout
+
+@* Hero section *@
+<section class="text-gray-600 body-font">
+    <div class="flex md:flex-row flex-col items-center md:items-start">
+        <div class="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center sm:max-w-3xl">
+            <h1 class="title-font mb-4 text-3xl font-medium sm:font-bold text-gray-900 sm:text-gray-800 sm:text-5xl sm:leading-tight max-w-4xl">View events, plan your year and track habits, all in seconds.</h1>
+            <h2 class="text-xl sm:text-2xl">An entire calendar year compacted into a single minimalistic view.</h2>
+            <div class="mt-12">
+                <a href="https://my.minicalendar.app" class="flex items-center w-fit text-gray-700 border-0 py-2 px-6 bg-green-300 hover:bg-green-400 focus:outline-none rounded-lg text-lg font-medium">Start now for free<ArrowRightIcon class="ms-2 w-6"/></a>
+            </div>
+            <div>
+                <p class="mt-2 ms-1 text-gray-700">No sign-up, No cost</p>
+            </div>
+        </div>
+        <div class="mx-auto lg:max-w-lg lg:w-full md:w-1/2 w-5/6 sm:ms-auto rounded-3xl shadow-xl shadow-gray-500">
+            <img class="object-cover object-center p-2 rounded-3xl outline outline-4 border-slate-600" alt="Calendar image" src="images/home/calendar-portrait-3-months-3.png">
+        </div>
+    </div>
+</section>

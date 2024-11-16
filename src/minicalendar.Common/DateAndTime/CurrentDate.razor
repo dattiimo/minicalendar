@@ -1,0 +1,59 @@
+﻿@*
+    Renders the current date.
+    Maintains a background thread to refresh the current date every hour.
+    The default format is `dddd D MMMM` seperated into each part.
+*@
+@using Microsoft.Extensions.Logging
+@using minicalendar.Common.Core
+@inject TimeProvider TimeProvider
+@inject ILogger<CurrentDate> Logger
+
+<time datetime="@_today.ToString("yyyy-MM-dd")" title="@_today.ToString("D")">
+    @if (string.IsNullOrEmpty(Format))
+    {
+        <span class="">@_today.ToString("dddd")</span>
+        <span class="font-bold text-red-800">@_today.Day</span>
+        <span class="">@_today.ToString("MMMM")</span>
+    }
+    else
+    {
+        <span>@_today.ToString(Format)</span>
+    }
+</time>
+
+@code {
+    private DateOnly _today = DateOnly.MinValue;
+    private BackgroundTask? _refreshTimer;
+
+    [Parameter] public DateOnly? Value { get; set; }
+    [Parameter] public string? Format { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("OnInitializedAsync");
+        // _refreshTimer = new BackgroundTask(TimeSpan.FromHours(1), OnIntervalAsync);
+        // _refreshTimer.Start();
+        await base.OnInitializedAsync();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        SetDate();
+    }
+
+    private void SetDate()
+    {
+        Logger.LogInformation($"SetDate()");
+        _today = Value ?? TimeProvider.GetLocalNow().DateTime.ToDateOnly();
+    }
+
+    // private Task OnIntervalAsync()
+    // {
+    //     Logger.LogInformation($"Refreshing CurrentDate");
+    //     SetDate();
+    //     Logger.LogInformation($"Set CurrentDate: {_today}");
+    //     StateHasChanged();
+    //     return Task.CompletedTask;
+    // }
+}

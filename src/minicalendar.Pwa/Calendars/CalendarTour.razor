@@ -1,0 +1,63 @@
+﻿@*
+    Product Tour for the calendar page.
+    Supports the concept of multiple "steps" by persisting the current step progress but only one step is currently used.
+    Only shown when `Enabled` is `true` and the step hasn't already been dismissed.
+    When dissmissed, the step value is persisted to local storage for next time.
+*@
+@using Blazored.LocalStorage
+@using minicalendar.Common.Bubble
+@inject ILocalStorageService LocalStorage
+
+@if (Enabled && _step == null)
+{
+    <div class="bg-gray-800 opacity-50 w-full min-w-full h-full fixed top-0 left-0 z-40"
+         @onclick="HandleFinishAsync"></div>
+    <div class="z-50 fixed w-full justify-center content-center">
+        <Container>
+            <div class="justify-items-center">
+                <Bubble Class="" OnCloseAsync="HandleFinishAsync" Closable="true" Title="Welcome!">
+                    <p class="mt-2 sm:mt-4">Let's get started with a calendar for this year.
+                        Tap or click any date and then <PlusIcon class="size-5 sm:size-6 inline-flex text-green-500" /> to add an activity to that date.</p>
+                    <p class="mt-2 sm:mt-4">
+                        You can change the title and the starting date of the calendar at any time in the <Cog8ToothIcon class="size-5 sm:size-6 inline-flex text-green-500" /> calendar settings.</p>
+                    <p class="mt-2 sm:mt-4">
+                        View your calendars and create new ones by tapping or clicking the <ArrowLeftIcon class="size-5 sm:size-6 inline-flex text-green-500" /> home button.</p>
+                    <div class="mt-4 flex justify-center">
+                        <PrimaryTextAction OnClickAsync="HandleFinishAsync">OK</PrimaryTextAction>
+                    </div>
+                </Bubble>
+            </div>
+        </Container>
+    </div>
+}
+
+@code {
+    private const string KeyForStep = "Pwa.Calendars.CalendarTour.Step";
+    private int? _step = null;
+
+    [Parameter] public bool Enabled { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _step = await GetStep();
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task HandleFinishAsync()
+    {
+        await SetStep(1); // 1 == first item shown
+    }
+
+    private async Task<int?> GetStep()
+    {
+        var step = await LocalStorage.GetItemAsync<int?>(KeyForStep);
+        return step;
+    }
+
+    private async Task SetStep(int step)
+    {
+        await LocalStorage.SetItemAsync(KeyForStep, step);
+        _step = step;
+    }
+}

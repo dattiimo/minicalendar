@@ -1,0 +1,91 @@
+﻿@page "/cal/{CalendarId:guid}/activities/list"
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
+@using minicalendar.Common.SortableList
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+@inject ICalendarRepository CalendarRepo
+
+<Header>
+    <div></div> @* Action should align to the right. *@
+    <div><PrimaryAction OnClickAsync="OnDoneClickAsync" Title="Done">Done</PrimaryAction></div>
+</Header>
+
+<article>
+    <Container>
+        @if (_calendar.Activities.Any())
+        {
+            <SortableList Id="sortable" Class="flex flex-col border rounded-md border-gray-300 divide-y text-lg"
+                          Items="_activities" OnUpdate="@HandleActivityListUpdateAsync" Context="activity">
+                <SortableItemTemplate>
+                    <li class="flex p-4 border-l-8 border-b-gray-300  
+                                first:rounded-tl-md last:rounded-bl-md 
+                                @Style.GetColourStyle("border-l", activity.ColourKind)">
+                        <span class="select-none">@activity.Title</span>
+                        <IconButton Class="ms-auto" Title="Edit activity" OnClick="async () => await HandleEditClickAsync(activity.Id)">
+                            <PencilSquareIcon class="size-6"/>
+                        </IconButton>
+                    </li>
+                </SortableItemTemplate>
+            </SortableList>
+        }
+        else
+        {
+            <p class="my-8 text-lg">No activities have been created.</p>
+            <p><PrimaryButton OnClickAsync="HandleCreateClickAsync">Create new activity</PrimaryButton></p>
+        }
+    </Container>
+</article>
+
+@code {
+    private Calendar _calendar = new();
+    private List<Activity> _activities = [];
+
+    [Parameter]
+    public Guid CalendarId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _calendar = await CalendarRepo.GetByIdAsync(CalendarId);
+        _activities = _calendar.Activities.ToList();
+    }
+
+    private async Task HandleActivityListUpdateAsync((int oldIndex, int newIndex) indices)
+    {
+        var (oldIndex, newIndex) = indices;
+        var items = _activities;
+        var itemToMove = items[oldIndex];
+        items.RemoveAt(oldIndex);
+
+        if (newIndex < items.Count)
+        {
+            items.Insert(newIndex, itemToMove);
+        }
+        else
+        {
+            items.Add(itemToMove);
+        }
+
+        _calendar.Activities = _activities;
+        await CalendarRepo.SaveItemAsync(_calendar);
+    }
+
+    private Task OnDoneClickAsync()
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCreateClickAsync()
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}/activities/create");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleEditClickAsync(Guid id)
+    {
+        Nav.NavigateTo($"cal/{_calendar.Id}/activities/{id}/edit");
+        return Task.CompletedTask;
+    }
+
+}

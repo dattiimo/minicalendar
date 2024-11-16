@@ -1,0 +1,65 @@
+﻿@* @using Web.Client.Navigation *@
+@* @using Web.Client.Components.Buttons *@
+@* @inject CalendarNavigator CalendarNav *@
+@* @inject SiteNavigator Nav *@
+@* @using Components.Buttons *@
+@* @using Components.Icons *@
+@inject NavigationManager Nav
+
+@* Display a list of calendar details. 
+Selecting an item will navigate to the calendar screen.
+Mobile screens display the calendar title only.
+Small screens will display an additional description where populated.
+When IsEditable is true an edit button is displayed.
+*@
+@foreach (var item in Items)
+{
+    <div class="px-2 py-4 sm:py-6 flex border-b border-gray-200 cursor-pointer" 
+         @onclick="() => HandleClickAsync(item)">
+        <div class="grow">
+            <div class="flex text-lg sm:text-xl">
+                <span>@item.Title</span>
+            </div>
+            <div class="text-sm text-slate-400 hidden sm:block">
+                @if (ShowDescription && !string.IsNullOrEmpty(item.Description))
+                {
+                    @item.Description
+                }
+                else
+                {
+                    <div class="p-2"></div>
+                }
+            </div>
+        </div>
+        @if (item.IsEditable)
+        {
+            <div class="shrink flex text-slate-500 font-light text-sm">
+
+                <div class="">
+                    <IconButton OnClick="() => HandleEditAsync(item)">
+                        <PencilSquareIcon class="size-6"></PencilSquareIcon>
+                    </IconButton>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public List<CalendarListItem> Items { get; set; } = [];
+
+    [Parameter] public EventCallback<CalendarListItem> OnSelect { get; set; }
+
+    [Parameter] public bool ShowDescription { get; set; } = true;
+
+    private async Task HandleClickAsync(CalendarListItem item)
+    {
+        await OnSelect.InvokeAsync(item);
+    }
+    
+    private Task HandleEditAsync(CalendarListItem item)
+    {
+        Nav.NavigateTo($"cal/{item.Id}/edit");
+        return Task.CompletedTask;
+    }
+}

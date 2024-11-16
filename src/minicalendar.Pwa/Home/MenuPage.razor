@@ -1,0 +1,39 @@
+﻿@page "/menu"
+@inject NavigationManager NavManager
+
+<Header>
+    <div><IconAction OnClick="HandleCloseClickAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
+</Header>
+
+<article>
+    <Container>
+        <div class="flex items-center text-xl text-gray-600 hover:text-gray-800 font-medium">
+            <img src="images/icon-192.png" class="max-w-12 sm:max-w-16" alt="logo" title="mini calendar"/>
+            <span class="ml-2">mini calendar</span>
+        </div>
+
+        <div class="mt-8 flex flex-col divide-y border rounded-md border-gray-300 text-lg">
+            @* <div class="hover:bg-blue-400 hover:text-white" data-enhance-nav="false"> *@
+            @*     <a class="py-4 px-8 block" href="./" target="_blank">Home</a> *@
+            @* </div> *@
+            <div class="hover:bg-blue-400 hover:text-white">
+                <a class="py-4 px-8 block" href="privacy/data">Privacy</a>
+            </div>
+            <div class="hover:bg-blue-400 hover:text-white">
+                <a class="py-4 px-8 block" href="https://docs.google.com/forms/d/e/1FAIpQLSeD7kCWasBISvilqm65GYmKOfQopVEes57pKCrlD_ylHN6TzA/viewform?usp=sf_link" target="_blank">Contact</a>
+            </div>
+            <div class="hover:bg-blue-400 hover:text-white">
+                <a class="py-4 px-8 block" href="https://docs.google.com/forms/d/e/1FAIpQLSeD7kCWasBISvilqm65GYmKOfQopVEes57pKCrlD_ylHN6TzA/viewform?usp=sf_link" target="_blank">Rate this app</a>
+            </div>
+        </div>
+    </Container>
+</article>
+
+@code {
+
+    private Task HandleCloseClickAsync()
+    {
+        NavManager.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+}

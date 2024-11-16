@@ -1,0 +1,34 @@
+﻿@using minicalendar.Common.Icons
+<div class="flex flex-wrap">
+    @foreach (var dateToAdd in Dates.OrderBy(x => x))
+    {
+    <span class="flex justify-center rounded-full bg-red-800 border py-1 ps-3 pe-2 me-2 my-1 text-white text-sm"
+          @onclick="async () => await HandleDateRemoveAsync(dateToAdd)">
+        @FormatDate(dateToAdd)
+        <span class="text-xs ms-2"><XCircleIcon /></span>
+                </span>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<DateOnly> Dates { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<ICollection<DateOnly>> DatesChanged { get; set; }
+
+    private async Task HandleDateRemoveAsync(DateOnly date) {
+        if (Dates.Contains(date))
+        {
+            Dates.Remove(date);
+            await DatesChanged.InvokeAsync(Dates);
+        }   
+    }
+    
+    private static string FormatDate(DateOnly date)
+    {
+        var format = date.Year == DateTime.Now.Year ? "MMM d" : "MMM d yyyy";
+        return date.ToString(format);
+    }
+
+}

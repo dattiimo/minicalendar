@@ -1,0 +1,86 @@
+﻿<aside class="@(IsShown ? "" : "hidden") fixed bottom-0 w-full bg-gray-700 text-gray-300 z-50 flex justify-center">
+    <div class="">
+        @* Expand/shrink toggle *@
+        @if (CanExpand)
+        {
+            <div class="w-full flex justify-center text-white bg-gray-700">
+                @* <div class="sm:container sm:mx-auto flex justify-center"> *@
+                    <button class="py-2 sm:py-4 px-4" type="button" @onclick="HandleExpandToggleAsync">
+                        @if (_isExpanded)
+                        {
+                            <ChevronDownIcon></ChevronDownIcon>
+                        }
+                        else
+                        {
+                            <ChevronUpIcon></ChevronUpIcon>
+                        }
+                    </button>
+                @* </div> *@
+            </div>
+            @* <div class="mt-8"></div> *@
+        }
+        <div class="overflow-y-auto">
+            <div class="container mx-auto px-4 pb-16">
+                <div class="flex justify-between">
+                    @if (_isExpanded)
+                    {
+                        <div class="max-h-80 w-full">
+                            <div class="flex flex-col sm:flex-row sm:flex-wrap">
+                                @Expanded
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="min-h-24 max-h-32 h-32 overflow-hidden">
+                            <div class="flex flex-wrap justify-start sm:justify-center pt-2 pe-16 sm:pe-0 sm:pb-16 sm:pt-8">
+                                @Collapsed
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            @* <div class="absolute right-0 bottom-0"> *@
+            @*     @Action *@
+            @* </div> *@
+            @* <div class="text-gray-300"> *@
+            @* <div class="mx-4 sm:container sm:mx-auto text-gray-300"> *@
+            @* @if (_isExpanded) *@
+            @* { *@
+            @*     <div class="max-h-80"> *@
+            @*         <div class="flex flex-col sm:flex-row sm:flex-wrap pt-4 pb-16"> *@
+            @*             @Expanded *@
+            @*         </div> *@
+            @*     </div> *@
+            @* } *@
+            @* else *@
+            @* { *@
+            @*     <div class="min-h-24 max-h-32 overflow-hidden"> *@
+            @*         <div class="flex flex-wrap justify-start sm:justify-center pt-2 pe-16 sm:pe-0 sm:pb-16 sm:pt-8"> *@
+            @*             @Collapsed *@
+            @*         </div> *@
+            @*     </div> *@
+            @* } *@
+            @* <div class="fixed bottom-6 right-6 sm:bottom-8 sm:right-12"> *@
+            @*     @Action *@
+            @* </div> *@
+            @* </div> *@
+        </div>
+    </div>
+</aside>
+
+@code {
+    private bool _isExpanded;
+
+    [Parameter] public bool IsShown { get; set; } = true;
+    [Parameter] public bool CanExpand { get; set; } = true;
+    [Parameter] public required RenderFragment Collapsed { get; set; }
+    [Parameter] public required RenderFragment Expanded { get; set; }
+    [Parameter] public required RenderFragment Action { get; set; }
+
+    private Task HandleExpandToggleAsync()
+    {
+        _isExpanded = !_isExpanded;
+        return Task.CompletedTask;
+    }
+}

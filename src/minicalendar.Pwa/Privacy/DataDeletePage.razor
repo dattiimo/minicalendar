@@ -1,0 +1,72 @@
+﻿@page "/privacy/data/delete"
+@using Blazored.LocalStorage;
+@* @inject SiteNavigator Nav *@
+@inject NavigationManager Nav
+@inject ILocalStorageService LocalStorage
+@inject ILogger<DataPage> Logger
+
+<Header>
+    <div><IconAction OnClick="HandleCancelClickAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
+</Header>
+
+@if (_hasData)
+{
+    <article>
+        <Container>
+            <h1 class="text-4xl mb-2 font-medium">Delete all data</h1>
+            <div class="text-base mb-12">
+                <p class="text-lg">Continuing will permanently delete all calendars, activities and settings from this device
+                    and you will no longer be able to view them.</p>
+                <p class="mt-4 text-lg">Are you sure you want to delete all your data?</p>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" @bind="_isConfirmed" id="accept">
+                <label class="form-check-label" for="accept">
+                    I understand
+                </label>
+            </div>
+            <div class="mt-8">
+                <PrimaryButton OnClickAsync="HandleCancelClickAsync">Keep</PrimaryButton>
+                <DangerButton OnClickAsync="HandleDeleteClickAsync" DisableSubmit="@(!_isConfirmed)">Delete</DangerButton>
+            </div>
+        </Container>
+    </article>
+}
+else
+{
+    <article class="container px-2 py-20 sm:mx-auto">
+        <h1 class="text-4xl mb-2 font-medium">No Data</h1>
+        <div class="text-base mb-12">
+            <p class="text-lg">There is no app data saved on your device.</p>
+            <p class="text-lg mt-4">If you would like to start again.</p>
+            <PrimaryButton OnClickAsync="@(() => Nav.NavigateTo("/"))">Keep</PrimaryButton>
+        </div>
+    </article>
+}
+
+@code {
+    private bool _isConfirmed;
+    private bool _hasData = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var dataKeys = await LocalStorage.KeysAsync();
+        _hasData = dataKeys.Any();
+    }
+
+    private async Task HandleDeleteClickAsync()
+    {
+        Logger.LogWarning("All data has been deleted.");
+        // delete all local storage
+        await LocalStorage.ClearAsync();
+        //await CalendarStore.InitialiseAsync();
+        Nav.NavigateTo("privacy/data/removed");
+    }
+
+    private Task HandleCancelClickAsync()
+    {
+        Nav.NavigateTo("privacy/data");
+        return Task.CompletedTask;
+    }
+
+}

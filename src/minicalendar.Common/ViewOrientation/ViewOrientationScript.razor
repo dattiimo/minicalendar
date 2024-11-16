@@ -1,0 +1,53 @@
+﻿<script>
+    (() => {
+        function loadOrientation() {
+            console.log('View orientation script');
+            let view = window.localStorage ? localStorage.getItem('view-orientation') : undefined;
+            if (view === 'landscape') {
+                applyLandscape();
+                return;
+            }
+            if (view === 'portrait') {
+                applyPortrait();
+                return;
+            }
+            @* if (window.matchMedia && window.matchMedia("(orientation: landscape)").matches) {
+            console.log('landscape from media query');
+            applyLandscapeViewOrientation();
+            return;
+        } *@
+            applyPortrait();
+        }
+        function applyPortrait(persist) {
+            console.log("Applying portrait view");
+            const list = document.documentElement.classList;
+            list.remove('view-landscape');
+            list.add('view-portrait');
+            if (persist)
+                localStorage.setItem('view-orientation', 'portrait');
+        }
+        function applyLandscape(persist) {
+            console.log("Applying landscape view");
+            const list = document.documentElement.classList;
+            list.remove('view-portrait');
+            list.add('view-landscape');
+            if (persist)
+                localStorage.setItem('view-orientation', 'landscape');
+        }
+        function toggleOrientation(persist) {
+            const list = document.documentElement.classList;
+            if (list.contains('view-landscape'))
+                applyPortrait(persist);
+            else
+                applyLandscape(persist);
+        }
+
+        window.viewOrientation = {
+            load: loadOrientation,
+            toggle: toggleOrientation,
+            applyLandscape: applyLandscape,
+            applyPortrait: applyPortrait
+        };
+        window.viewOrientation.load();
+    })();
+</script>

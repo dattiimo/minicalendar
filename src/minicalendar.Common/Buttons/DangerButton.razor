@@ -1,0 +1,17 @@
+﻿<button @onclick="HandleClickAsync"
+        class="py-2 px-4 m-1 ring-1 ring-red-500 rounded-md text-red-600 focus:outline-none enabled:hover:bg-red-600 enabled:hover:text-white 
+            disabled:text-red-300 disabled:ring-red-300 @Class"
+        disabled="@DisableSubmit" 
+>@ChildContent</button>
+
+@code {
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClickAsync { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool DisableSubmit { get; set; } 
+
+    private async Task HandleClickAsync()
+    {
+        await OnClickAsync.InvokeAsync();
+    }
+}
