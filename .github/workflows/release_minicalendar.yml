@@ -22,17 +22,16 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build "src/minicalendar/minicalendar.csproj" --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish "src/minicalendar/minicalendar.csproj" -c Release --property:PublishDir=${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
-          retention-days: 7
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BA6895008DCD45DC875C974085CA05AA }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D2A6304CB1E34C999687240D4A038A07 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_25163E38B1AF41D3A35E3B1BF9A58534 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_76684C7FC8E644709E04049DE994D824 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8F278869A2C34ACFBA436B0CE1DAEB0B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0E74E4F0859C45078F4676D7FC678C43 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
