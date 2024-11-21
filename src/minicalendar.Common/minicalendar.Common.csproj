@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <RazorLangVersion>8.0</RazorLangVersion>
+    <TargetFramework>net9.0</TargetFramework>
+    <RazorLangVersion>9.0</RazorLangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- <AddRazorSupportForMvc>true</AddRazorSupportForMvc> -->
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.0" />
   </ItemGroup>
 
   <!-- <ItemGroup>
