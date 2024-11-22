@@ -1,8 +1,11 @@
 ﻿@page "/cal/export"
+@rendermode RenderModes.InteractiveWebAssemblyWithoutPrerendering
 @using minicalendar.Common.Calendars
 @using System.Text.Json
+@using minicalendar.Client.Configuration
 @using minicalendar.Common.Container
 @inject ICalendarRepository CalendarRepository
+@inject ILogger<Export> Logger
 
 <Container>
     <InputTextArea @bind-Value="@_data" class="w-full h-64 bg-gray-200"></InputTextArea>
@@ -17,11 +20,23 @@
         {
             return;
         }
+
+        await LoadData();
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task LoadData()
+    {
+        Logger.LogInformation("Loading data");
+        Logger.LogInformation("Reading calendars");
         var cals = await CalendarRepository.GetAllAsync();
+        Logger.LogInformation($"Calendars found:{cals.Count}");
 
         var data = JsonSerializer.Serialize(cals);
+        Logger.LogInformation("Updating data");
+        Logger.LogInformation(_data);
         _data = data;
-        await base.OnAfterRenderAsync(firstRender);
+        StateHasChanged();
     }
 
 }
