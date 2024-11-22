@@ -16,6 +16,18 @@
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    <script>
+        @* Previous versions of the website/app may have registered a service worker that is no longer used
+        so any registered service workers should be unregistered. *@
+        if(window.navigator && navigator.serviceWorker) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    
+    </script>
 </body>
 
 </html>
