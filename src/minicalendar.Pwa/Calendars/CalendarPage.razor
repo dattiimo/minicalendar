@@ -432,15 +432,13 @@
         {
             return Task.CompletedTask;
         }
-    
+
         activity.IsShown = !activity.IsShown;
         if (_selectedActivity != null)
         {
             _selectedActivity.IsShown = activity.IsShown;
         }
-    
-        _showLegendDetail = false;
-    
+
         return Task.CompletedTask;
     }
 
