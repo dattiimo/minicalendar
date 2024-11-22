@@ -1030,6 +1030,10 @@ video {
   cursor: pointer;
 }
 
+.touch-none {
+  touch-action: none;
+}
+
 .select-none {
   -webkit-user-select: none;
      -moz-user-select: none;
