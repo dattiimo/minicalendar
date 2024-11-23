@@ -2,7 +2,7 @@
 @inject NavigationManager NavManager
 
 <Header>
-    <div><IconAction OnClick="HandleCloseClickAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
+    <div><IconAction OnClick="HandleCloseAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
 </Header>
 
 <article>
@@ -25,15 +25,24 @@
             <div class="hover:bg-blue-400 hover:text-white">
                 <a class="py-4 px-8 block" href="https://docs.google.com/forms/d/e/1FAIpQLSeD7kCWasBISvilqm65GYmKOfQopVEes57pKCrlD_ylHN6TzA/viewform?usp=sf_link" target="_blank">Rate this app</a>
             </div>
+            <div class="hover:bg-blue-400 hover:text-white">
+                <a class="py-4 px-8 block cursor-pointer" @onclick="HandleReloadAsync">Reload app</a>
+            </div>
         </div>
     </Container>
 </article>
 
 @code {
 
-    private Task HandleCloseClickAsync()
+    private Task HandleCloseAsync()
     {
         NavManager.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleReloadAsync()
+    {
+        NavManager.NavigateTo("/", forceLoad: true);
         return Task.CompletedTask;
     }
 }
