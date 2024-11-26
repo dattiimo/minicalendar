@@ -1,0 +1,7 @@
+﻿<div class="p-2 sm:p-4 rounded-lg border-2 border-red-500 bg-red-100">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+}

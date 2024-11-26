@@ -40,14 +40,14 @@ public class Calendar : IValidatableObject
         SprintInterval = src.SprintInterval;
     }
 
-    public Calendar Duplicate()
+    public Calendar Duplicate(string postfix = "")
     {
         var now = DateTime.Now;
         var cal = new Calendar();
         cal.PopulateFrom(this);
         cal.CreatedAt = now;
         cal.LastModifiedAt = now;
-        cal.Title = Title + " - copy"; 
+        cal.Title = Title + postfix; 
         foreach (var evt in Activities)
         {
             var newActivity = new Activity();
