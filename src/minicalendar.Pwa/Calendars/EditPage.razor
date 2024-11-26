@@ -106,7 +106,7 @@
 
     private async Task HandleDuplicateClickAsync()
     {
-        var cal = _model.Duplicate();
+        var cal = _model.Duplicate(postfix: " - copy");
         await CalendarRepo.SaveItemAsync(cal);
         Nav.NavigateTo($"cal/{cal.Id}");
     }

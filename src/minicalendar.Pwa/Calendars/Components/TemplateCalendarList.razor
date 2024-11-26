@@ -26,7 +26,7 @@
     private async Task HandleSelectClickAsync(CalendarListItem cal)
     {
         var demoCal = await TemplateCalendarRepo.GetByIdAsync(cal.Id);
-        var newCal = demoCal.Duplicate();
+        var newCal = demoCal.Duplicate(postfix: " - copy");
         await CalendarRepo.SaveItemAsync(newCal);
 
         Nav.NavigateTo($"cal/{newCal.Id}");
