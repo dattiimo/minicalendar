@@ -1,0 +1,34 @@
+﻿@*
+    Hide the child content unless the feature with the given Name has been enabled 
+    via a localStorage setting. 
+*@
+
+@using Blazored.LocalStorage
+@inject ILocalStorageService LocalStorage
+
+@if (_isVisible)
+{
+    @ChildContent
+}
+
+@code {
+    private bool _isVisible;
+
+    [Parameter] public required string Name { get; set; } = string.Empty;
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var isVisible = await LocalStorage.GetItemAsync<bool?>($"Common_FeatureSwitch_{Name.ToLower()}");
+            if (isVisible == true)
+            {
+                _isVisible = true;
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}
