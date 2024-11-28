@@ -1,9 +1,13 @@
 ﻿@page "/cal/{id:guid}/edit"
+@using System.Text.Json
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
+@using minicalendar.Common.FeatureSwitch
+@using minicalendar.Common.FileManager
 @inject NavigationManager Nav
 @inject ICalendarRepository CalendarRepo
+@inject FileManagerService FileManager
 
 <Header>
     <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
@@ -49,6 +53,9 @@
         <div class="my-20">
             <FormAction Title="Activities" Text="Edit activities" OnClickAsync="HandleEditClickAsync">Edit the calendar activities.</FormAction>
             <FormAction Title="Duplicate calendar" Text="Duplicate" OnClickAsync="HandleDuplicateClickAsync">Create a duplicate of this calendar and all of it's activities.</FormAction>
+            <FeatureSwitch Name="plus">
+                <FormAction Title="Export calendar" Text="Export" OnClickAsync="HandleExportAsync">Download an export file for back up.</FormAction>
+            </FeatureSwitch>
             <ActionDanger Title="Delete calender" Text="Delete calendar" OnClickAsync="HandleDeleteClickAsync">Delete this calendar and all of it's activities.</ActionDanger>
         </div>
     </Container>
@@ -121,6 +128,17 @@
     {
         Nav.NavigateTo($"cal/{Id}/delete");
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Export a single calendar details as a json file.
+    /// Can be used as a backup or direct upload to the public blob storage gallery. 
+    /// </summary>
+    private async Task HandleExportAsync()
+    {
+        var exportAsJson = JsonSerializer.Serialize(_model);
+        var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
+        await FileManager.SaveAsAsync($"cal_{_model.Id}.json", exportAsBytes);
     }
 
 }
