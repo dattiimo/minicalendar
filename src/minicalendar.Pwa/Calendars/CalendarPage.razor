@@ -1,4 +1,5 @@
 ﻿@page "/cal/{id:guid}"
+@using System.Text.Json
 @using minicalendar.Common.ViewOrientation
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Calendars.Activities
@@ -6,17 +7,21 @@
 @using minicalendar.Common.YearSpan
 @using minicalendar.Pwa.Calendars.Components
 @using minicalendar.Common.Blade
+@using minicalendar.Common.Calendars.Publishing
 @using minicalendar.Common.Forms
 @using minicalendar.Common.ScrollToElement
 @using minicalendar.Common.DateAndTime
 @using minicalendar.Common.Drawer
-@* @inject ISelectedCalendarDates SelectedCalendarDates *@
+@using minicalendar.Common.FeatureSwitch
+@using minicalendar.Common.FileManager
+@using CalendarPublication = minicalendar.Common.Calendars.CalendarPublication
 @inject ICalendarRepository CalendarRepository
 @inject TimeProvider TimeProvider
 @inject NavigationManager Nav
-@inject DateDistance DateDistance
 @inject ILogger<CalendarPage> Logger
 @inject ISelectedCalendarDates SelectedDates
+@inject FileManagerService FileManager
+@inject ICalendarStorage CalendarStorage
 
 <CalendarTour Enabled="@(Tour == true)"></CalendarTour>
 
@@ -36,22 +41,32 @@
         else
         {
             <div class="flex justify-center content-center">
-                <IconAction Url="/" Title="Back">
+                <IconAction Title="Back" Url="/">
                     <ArrowLeftIcon class="size-6 sm:size-8"/>
                 </IconAction>
                 <span class="hidden sm:block ps-10 sm:ps-12 text-xl">
                     <CurrentDate Value="@_today"></CurrentDate>
-                    @* <DateDisplay Date="@_today"></DateDisplay> *@
                 </span>
             </div>
-
             <div>
-                <IconAction Title="View options" OnClick="HandleViewOptionsClick">
-                    <EyeIcon class="size-6 sm:size-8"></EyeIcon>
-                </IconAction>
-                <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
-                    <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
-                </IconAction>
+                @* Navigation - View Options | Settings | Share *@
+                <span>
+                    <IconAction Title="View options" OnClick="HandleViewOptionsClick">
+                        <EyeIcon class="size-6 sm:size-8"></EyeIcon>
+                    </IconAction>
+                </span>
+                <span class="ms-2 sm:ms-4">
+                    <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
+                        <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
+                    </IconAction>
+                </span>
+                <FeatureSwitch Name="plus">
+                    <span class="ms-2 sm:ms-4">
+                        <IconAction Title="Share" OnClick="HandleShareOptionsAsync">
+                            <ArrowUpOnSquare class="size-6 sm:size-8"></ArrowUpOnSquare>
+                        </IconAction>
+                    </span>
+                </FeatureSwitch>
             </div>
         }
     </Header>
@@ -84,10 +99,9 @@
                     </YearSpan>
                 </div>
             </div>
-            @* Legend *@
-            @* @if (_showLegend) *@
-            @* { *@
+            @* Aside section *@
             <aside class="vport:md:ms-10 vport:md:mt-8 vland:my-8 w-64 max-w-64">
+                @* Legend *@
                 @if (_showLegend && !_selectedDates.Any())
                 {
                     <div class="vport:md:sticky vport:md:top-28">
@@ -96,7 +110,6 @@
                     </div>
                 }
             </aside>
-            @* } *@
         </div>
     </article>
 </ViewOrientation>
@@ -152,100 +165,32 @@
     }
 </Drawer>
 
+<FeatureSwitch Name="plus">
+    <Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
+        <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
+        @if (_calendar.Publication != null)
+        {
+            var publishUrl = $"http://minicalendar.app/gallery/cal/{_calendar.Publication.Id}";
+            <div class="text-sm text-gray-500">
+                <div class="mt-2 sm:mt-2">
+                    <span>ID: </span><span>@_calendar.Publication.Id</span>
+                </div>
+                <div class="mt-2 sm:mt-2">
+                    <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
+                </div>
+            </div>
+        }
+
+        <FormAction Title="Export calendar" Text="Export" OnClickAsync="HandleExportAsync">Download an export file for back up.</FormAction>
+    </Drawer>
+</FeatureSwitch>
+
 @if (_selectedDates.Any())
 {
     <CalendarActions Activities="_calendar.Activities" SelectedDates="_selectedDates" CalendarId="_calendar.Id"
                      OnSelected="async (activity) => await HandleActivityClickAsync(activity.Id)"
                     OnCreate="HandleCreateActivityClickAsync" />
 }
-@* Activity actions *@
-@* <QuickAction IsShown="_selectedDates.Any()" CanExpand="_calendar.Activities.Any()"> *@
-@*     <Collapsed> *@
-@*         @if (_calendar.Activities.Any()) *@
-@*         { *@
-@*             @foreach (var evt in _calendar.Activities) *@
-@*             { *@
-@*                 <TinyActivityActionToggle Activity="evt" *@
-@*                                   IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
-@*                                   OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
-@*                 </TinyActivityActionToggle> *@
-@*             } *@
-@*         } *@
-@*         else *@
-@*         { *@
-@*             <p class="font-light me-20 text-sm">You have no existing activities. Add a new one for the chosen dates.</p> *@
-@*         } *@
-@* $1$         <button type="button" class="px-2 py-2 m-2 flex justify-center bg-gray-900 text-green-400  #1# *@
-@* $1$                   hover:bg-green-400 hover:text-white  #1# *@
-@* $1$                   rounded-full shadow-lg shadow-gray-600"  #1# *@
-@* $1$               aria-label="Create new activity"  #1# *@
-@* $1$               title="Create new activity"  #1# *@
-@* $1$               @onclick="HandleCreateActivityClickAsync">  #1# *@
-@*         $1$           <PlusIcon class="size-8 sm:size-10"></PlusIcon>  #1# *@
-@*         $1$ </button> #1# *@
-@*         <button class="p-2 m-2 rounded-full min-w-10 flex justify-center items-center text-sm sm:text-base select-none *@
-@*                 border-2 border-gray-900 hover:border-green-400 *@
-@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
-@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
-@*                 type="button" *@
-@*                 @onclick="HandleCreateActivityClickAsync" *@
-@*         ><PlusIcon class="size-6 sm:size-8" /></button> *@
-@*     </Collapsed> *@
-@*     <Expanded> *@
-@*         @foreach (var evt in _calendar.Activities) *@
-@*         { *@
-@*             <ActivityActionToggle Activity="evt" *@
-@*                               IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
-@*                               OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
-@*             </ActivityActionToggle> *@
-@*         } *@
-@* *@
-@*         <button class="m-2 py-1 px-3 rounded text-sm sm:text-lg select-none overflow-hidden *@
-@*                 flex justify-center *@
-@*                 border-2 border-gray-900 hover:border-green-400 *@
-@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
-@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
-@*             type="button" *@
-@*             @onclick="HandleCreateActivityClickAsync"><PlusIcon class="size-4 sm:size-6" /> *@
-@*             <span class="ms-2">Create new</span> *@
-@*         </button> *@
-@*          *@
-@*         <div class="flex justify-between pt-4 px-2 pb-16 w-full"> *@
-@*             @if (_calendar.Activities.Any()) *@
-@*             {             *@
-@*                 <a href="cal/@_calendar.Id/activities/list" class="flex justify-center hover:text-green-400"> *@
-@*                     <button type="button" class="me-2" *@
-@*                             aria-label="Edit activities" *@
-@*                             title="Edit activities"> *@
-@*                         <PencilSquareIcon class="size-6"/> *@
-@*                     </button> *@
-@*                     <span>Edit activities</span> *@
-@*                 </a> *@
-@*             } *@
-@*             $1$ <a href="cal/@_calendar.Id/activities/create" class="flex justify-center hover:text-green-400"> #1# *@
-@*             $1$     <button type="button" class="me-2" #1# *@
-@*             $1$             aria-label="Create new activity" #1# *@
-@*             $1$             title="Create new activity"> #1# *@
-@*             $1$         <PlusIcon classs="size-6"/> #1# *@
-@*             $1$     </button> #1# *@
-@*             $1$     <span>Create activity</span> #1# *@
-@*             $1$ </a> #1# *@
-@*         </div> *@
-@*     </Expanded> *@
-@* $1$      <Action> #1# *@
-@* $1$          $2$ <div class="self-end"> #2# #1# *@
-@* $1$              <button type="button" class="p-3 sm:p-3 flex justify-center bg-gray-900 text-green-400 #1# *@
-@* $1$                          hover:bg-green-400 hover:text-white #1# *@
-@* $1$                           rounded-full shadow-lg shadow-gray-600" #1# *@
-@* $1$                      aria-label="Create new activity" #1# *@
-@* $1$                      title="Create new activity" #1# *@
-@* $1$                      @onclick="HandleCreateActivityClickAsync"> #1# *@
-@* $1$                  <PlusIcon class="size-8 sm:size-10"></PlusIcon> #1# *@
-@* $1$              </button> #1# *@
-@* $1$          $2$ </div> #2# #1# *@
-@* $1$      </Action> #1# *@
-@* </QuickAction> *@
-
 
 @code {
     private DateOnly _today;
@@ -258,6 +203,7 @@
     private bool _showLegendDetail;
     private SelectedActivity? _selectedActivity;
     private YearSpan _yearSpan = new();
+    private bool _showShareOptions;
 
     [Parameter] public Guid Id { get; set; }
     [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
@@ -274,8 +220,6 @@
             Nav.NavigateTo("notfound");
             return;
         }
-
-        //_selectedDates = (await SelectedCalendarDates.GetAsync()).ToList();
 
         await CalendarRepository.RecordView(_calendar);
 
@@ -322,18 +266,6 @@
 
     private Task OnDateSelectAsync(YearSpan.DateSelectedEvent evt)
     {
-        // if (await SelectedCalendarDates.ContainsAsync(date))
-        // {
-        //     await SelectedCalendarDates.RemoveAsync(date);
-        // }
-        // else
-        // {
-        //     await SelectedCalendarDates.AddAsync(date);
-        // }
-        
-        //var dates = await SelectedCalendarDates.GetAsync();
-        
-        
         _selectedDates = evt.AllDates.ToList();
 
         HideAllDrawers();
@@ -349,20 +281,12 @@
 
     private async Task OnSelectedClearClickAsync()
     {
-        //await SelectedCalendarDates.ClearAsync();
         await _yearSpan.ClearSelectedAsync();
         _selectedDates = [];
     }
 
     private async Task HandleActivityClickAsync(Guid activityId)
     {
-        // Ensure the calendar exists as it may have since been deleted
-        // var calendar = await CalendarRepository.GetByIdAsync(Id);
-        // if (calendar == Calendar.Empty)
-        // {
-        //     await Nav.NavigateToAsync("app/notfound");
-        // }
-    
         if (!_selectedDates.Any())
         {
             return;
@@ -393,7 +317,6 @@
     
         await CalendarRepository.SaveItemAsync(_calendar);
     
-        //await SelectedCalendarDates.ClearAsync();
         await _yearSpan.ClearSelectedAsync();
         _selectedDates = [];
     }
@@ -420,6 +343,7 @@
     private Task HandleViewOptionsClick()
     {
         _showLegendDetail = false;
+        _showShareOptions = false;
         _showViewOptions = !_showViewOptions;
 
         return Task.CompletedTask;
@@ -440,6 +364,46 @@
         }
 
         return Task.CompletedTask;
+    }
+
+    private Task HandleShareOptionsAsync()
+    {
+        _showLegendDetail = false;
+        _showViewOptions = false;
+        _showShareOptions = !_showShareOptions;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Export a single calendar details as a json file.
+    /// Can be used as a backup or direct upload to the public blob storage gallery. 
+    /// </summary>
+    private async Task HandleExportAsync()
+    {
+        var exportAsJson = JsonSerializer.Serialize(_calendar);
+        var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
+        await FileManager.SaveAsAsync($"cal_{_calendar.Id}.json", exportAsBytes);
+    }
+
+    /// <summary>
+    /// Simple quick method to upload a calendar to blob storage so that it can be made available publicly.
+    /// Overwrite any existing publication with the latest changes.
+    /// </summary>
+    private async Task HandlePublishAsync()
+    {
+        var isPublished = _calendar.Publication != null;
+
+        if (!isPublished)
+        {
+            _calendar.Publication = new CalendarPublication
+            {
+                Id = _calendar.Id
+            };
+        }
+
+        await CalendarStorage.UpdateAsync(_calendar);
+
+        await CalendarRepository.SaveItemAsync(_calendar);
     }
 
     private class SelectedActivity

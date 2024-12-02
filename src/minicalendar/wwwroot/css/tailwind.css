@@ -13660,6 +13660,11 @@ video {
   background-color: rgb(168 85 247 / 0.95);
 }
 
+.bg-red-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));
+}
+
 .bg-red-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 202 202 / var(--tw-bg-opacity, 1));
@@ -16487,6 +16492,11 @@ video {
   outline-offset: 2px;
 }
 
+.active\:text-gray-400:active {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
 .enabled\:cursor-pointer:enabled {
   cursor: pointer;
 }
@@ -16706,6 +16716,10 @@ video {
     margin-left: 2rem;
   }
 
+  .sm\:ms-4 {
+    margin-inline-start: 1rem;
+  }
+
   .sm\:ms-8 {
     margin-inline-start: 2rem;
   }
@@ -16840,6 +16854,15 @@ video {
 
   .sm\:p-3 {
     padding: 0.75rem;
+  }
+
+  .sm\:p-4 {
+    padding: 1rem;
+  }
+
+  .sm\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
   .sm\:py-2 {
