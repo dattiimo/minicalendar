@@ -99,10 +99,9 @@
                     </YearSpan>
                 </div>
             </div>
-            @* Legend *@
-            @* @if (_showLegend) *@
-            @* { *@
+            @* Aside section *@
             <aside class="vport:md:ms-10 vport:md:mt-8 vland:my-8 w-64 max-w-64">
+                @* Legend *@
                 @if (_showLegend && !_selectedDates.Any())
                 {
                     <div class="vport:md:sticky vport:md:top-28">
@@ -111,7 +110,6 @@
                     </div>
                 }
             </aside>
-            @* } *@
         </div>
     </article>
 </ViewOrientation>
@@ -193,94 +191,6 @@
                      OnSelected="async (activity) => await HandleActivityClickAsync(activity.Id)"
                     OnCreate="HandleCreateActivityClickAsync" />
 }
-@* Activity actions *@
-@* <QuickAction IsShown="_selectedDates.Any()" CanExpand="_calendar.Activities.Any()"> *@
-@*     <Collapsed> *@
-@*         @if (_calendar.Activities.Any()) *@
-@*         { *@
-@*             @foreach (var evt in _calendar.Activities) *@
-@*             { *@
-@*                 <TinyActivityActionToggle Activity="evt" *@
-@*                                   IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
-@*                                   OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
-@*                 </TinyActivityActionToggle> *@
-@*             } *@
-@*         } *@
-@*         else *@
-@*         { *@
-@*             <p class="font-light me-20 text-sm">You have no existing activities. Add a new one for the chosen dates.</p> *@
-@*         } *@
-@* $1$         <button type="button" class="px-2 py-2 m-2 flex justify-center bg-gray-900 text-green-400  #1# *@
-@* $1$                   hover:bg-green-400 hover:text-white  #1# *@
-@* $1$                   rounded-full shadow-lg shadow-gray-600"  #1# *@
-@* $1$               aria-label="Create new activity"  #1# *@
-@* $1$               title="Create new activity"  #1# *@
-@* $1$               @onclick="HandleCreateActivityClickAsync">  #1# *@
-@*         $1$           <PlusIcon class="size-8 sm:size-10"></PlusIcon>  #1# *@
-@*         $1$ </button> #1# *@
-@*         <button class="p-2 m-2 rounded-full min-w-10 flex justify-center items-center text-sm sm:text-base select-none *@
-@*                 border-2 border-gray-900 hover:border-green-400 *@
-@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
-@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
-@*                 type="button" *@
-@*                 @onclick="HandleCreateActivityClickAsync" *@
-@*         ><PlusIcon class="size-6 sm:size-8" /></button> *@
-@*     </Collapsed> *@
-@*     <Expanded> *@
-@*         @foreach (var evt in _calendar.Activities) *@
-@*         { *@
-@*             <ActivityActionToggle Activity="evt" *@
-@*                               IsSelected="_selectedDates.All(x => evt.Dates.Contains(x))" *@
-@*                               OnClick="async () => await HandleActivityClickAsync(evt.Id)"> *@
-@*             </ActivityActionToggle> *@
-@*         } *@
-@* *@
-@*         <button class="m-2 py-1 px-3 rounded text-sm sm:text-lg select-none overflow-hidden *@
-@*                 flex justify-center *@
-@*                 border-2 border-gray-900 hover:border-green-400 *@
-@*                 bg-gray-900 text-green-400 hover:bg-green-400 hover:text-gray-900 *@
-@*                 ring-2 ring-gray-900 hover:ring-green-400" *@
-@*             type="button" *@
-@*             @onclick="HandleCreateActivityClickAsync"><PlusIcon class="size-4 sm:size-6" /> *@
-@*             <span class="ms-2">Create new</span> *@
-@*         </button> *@
-@*          *@
-@*         <div class="flex justify-between pt-4 px-2 pb-16 w-full"> *@
-@*             @if (_calendar.Activities.Any()) *@
-@*             {             *@
-@*                 <a href="cal/@_calendar.Id/activities/list" class="flex justify-center hover:text-green-400"> *@
-@*                     <button type="button" class="me-2" *@
-@*                             aria-label="Edit activities" *@
-@*                             title="Edit activities"> *@
-@*                         <PencilSquareIcon class="size-6"/> *@
-@*                     </button> *@
-@*                     <span>Edit activities</span> *@
-@*                 </a> *@
-@*             } *@
-@*             $1$ <a href="cal/@_calendar.Id/activities/create" class="flex justify-center hover:text-green-400"> #1# *@
-@*             $1$     <button type="button" class="me-2" #1# *@
-@*             $1$             aria-label="Create new activity" #1# *@
-@*             $1$             title="Create new activity"> #1# *@
-@*             $1$         <PlusIcon classs="size-6"/> #1# *@
-@*             $1$     </button> #1# *@
-@*             $1$     <span>Create activity</span> #1# *@
-@*             $1$ </a> #1# *@
-@*         </div> *@
-@*     </Expanded> *@
-@* $1$      <Action> #1# *@
-@* $1$          $2$ <div class="self-end"> #2# #1# *@
-@* $1$              <button type="button" class="p-3 sm:p-3 flex justify-center bg-gray-900 text-green-400 #1# *@
-@* $1$                          hover:bg-green-400 hover:text-white #1# *@
-@* $1$                           rounded-full shadow-lg shadow-gray-600" #1# *@
-@* $1$                      aria-label="Create new activity" #1# *@
-@* $1$                      title="Create new activity" #1# *@
-@* $1$                      @onclick="HandleCreateActivityClickAsync"> #1# *@
-@* $1$                  <PlusIcon class="size-8 sm:size-10"></PlusIcon> #1# *@
-@* $1$              </button> #1# *@
-@* $1$          $2$ </div> #2# #1# *@
-@* $1$      </Action> #1# *@
-@* </QuickAction> *@
-
 
 @code {
     private DateOnly _today;
@@ -310,8 +220,6 @@
             Nav.NavigateTo("notfound");
             return;
         }
-
-        //_selectedDates = (await SelectedCalendarDates.GetAsync()).ToList();
 
         await CalendarRepository.RecordView(_calendar);
 
@@ -358,18 +266,6 @@
 
     private Task OnDateSelectAsync(YearSpan.DateSelectedEvent evt)
     {
-        // if (await SelectedCalendarDates.ContainsAsync(date))
-        // {
-        //     await SelectedCalendarDates.RemoveAsync(date);
-        // }
-        // else
-        // {
-        //     await SelectedCalendarDates.AddAsync(date);
-        // }
-        
-        //var dates = await SelectedCalendarDates.GetAsync();
-        
-        
         _selectedDates = evt.AllDates.ToList();
 
         HideAllDrawers();
@@ -385,20 +281,12 @@
 
     private async Task OnSelectedClearClickAsync()
     {
-        //await SelectedCalendarDates.ClearAsync();
         await _yearSpan.ClearSelectedAsync();
         _selectedDates = [];
     }
 
     private async Task HandleActivityClickAsync(Guid activityId)
     {
-        // Ensure the calendar exists as it may have since been deleted
-        // var calendar = await CalendarRepository.GetByIdAsync(Id);
-        // if (calendar == Calendar.Empty)
-        // {
-        //     await Nav.NavigateToAsync("app/notfound");
-        // }
-    
         if (!_selectedDates.Any())
         {
             return;
@@ -429,7 +317,6 @@
     
         await CalendarRepository.SaveItemAsync(_calendar);
     
-        //await SelectedCalendarDates.ClearAsync();
         await _yearSpan.ClearSelectedAsync();
         _selectedDates = [];
     }
@@ -481,7 +368,7 @@
 
     private Task HandleShareOptionsAsync()
     {
-        _showLegend = false;
+        _showLegendDetail = false;
         _showViewOptions = false;
         _showShareOptions = !_showShareOptions;
         return Task.CompletedTask;
