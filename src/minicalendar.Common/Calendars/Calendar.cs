@@ -26,6 +26,8 @@ public class Calendar : IValidatableObject
     public DateOnly StartDate { get; set; } = DateTime.Now.ToDateOnly().StartOfYear();
     public List<Activity> Events { get; set; } = [];
     public List<Activity> Activities { get; set; } = [];
+    
+    public CalendarPublication? Publication { get; set; }
 
     public void PopulateFrom(Calendar src)
     {

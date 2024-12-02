@@ -1,4 +1,5 @@
 ﻿@page "/cal/{id:guid}"
+@using System.Text.Json
 @using minicalendar.Common.ViewOrientation
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Calendars.Activities
@@ -6,17 +7,21 @@
 @using minicalendar.Common.YearSpan
 @using minicalendar.Pwa.Calendars.Components
 @using minicalendar.Common.Blade
+@using minicalendar.Common.Calendars.Publishing
 @using minicalendar.Common.Forms
 @using minicalendar.Common.ScrollToElement
 @using minicalendar.Common.DateAndTime
 @using minicalendar.Common.Drawer
-@* @inject ISelectedCalendarDates SelectedCalendarDates *@
+@using minicalendar.Common.FeatureSwitch
+@using minicalendar.Common.FileManager
+@using CalendarPublication = minicalendar.Common.Calendars.CalendarPublication
 @inject ICalendarRepository CalendarRepository
 @inject TimeProvider TimeProvider
 @inject NavigationManager Nav
-@inject DateDistance DateDistance
 @inject ILogger<CalendarPage> Logger
 @inject ISelectedCalendarDates SelectedDates
+@inject FileManagerService FileManager
+@inject ICalendarStorage CalendarStorage
 
 <CalendarTour Enabled="@(Tour == true)"></CalendarTour>
 
@@ -36,22 +41,32 @@
         else
         {
             <div class="flex justify-center content-center">
-                <IconAction Url="/" Title="Back">
+                <IconAction Title="Back" Url="/">
                     <ArrowLeftIcon class="size-6 sm:size-8"/>
                 </IconAction>
                 <span class="hidden sm:block ps-10 sm:ps-12 text-xl">
                     <CurrentDate Value="@_today"></CurrentDate>
-                    @* <DateDisplay Date="@_today"></DateDisplay> *@
                 </span>
             </div>
-
             <div>
-                <IconAction Title="View options" OnClick="HandleViewOptionsClick">
-                    <EyeIcon class="size-6 sm:size-8"></EyeIcon>
-                </IconAction>
-                <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
-                    <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
-                </IconAction>
+                @* Navigation - View Options | Settings | Share *@
+                <span>
+                    <IconAction Title="View options" OnClick="HandleViewOptionsClick">
+                        <EyeIcon class="size-6 sm:size-8"></EyeIcon>
+                    </IconAction>
+                </span>
+                <span class="ms-2 sm:ms-4">
+                    <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
+                        <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
+                    </IconAction>
+                </span>
+                <FeatureSwitch Name="plus">
+                    <span class="ms-2 sm:ms-4">
+                        <IconAction Title="Share" OnClick="HandleShareOptionsAsync">
+                            <ArrowUpOnSquare class="size-6 sm:size-8"></ArrowUpOnSquare>
+                        </IconAction>
+                    </span>
+                </FeatureSwitch>
             </div>
         }
     </Header>
@@ -151,6 +166,26 @@
         </div>
     }
 </Drawer>
+
+<FeatureSwitch Name="plus">
+    <Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
+        <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
+        @if (_calendar.Publication != null)
+        {
+            var publishUrl = $"http://minicalendar.app/gallery/cal/{_calendar.Publication.Id}";
+            <div class="text-sm text-gray-500">
+                <div class="mt-2 sm:mt-2">
+                    <span>ID: </span><span>@_calendar.Publication.Id</span>
+                </div>
+                <div class="mt-2 sm:mt-2">
+                    <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
+                </div>
+            </div>
+        }
+
+        <FormAction Title="Export calendar" Text="Export" OnClickAsync="HandleExportAsync">Download an export file for back up.</FormAction>
+    </Drawer>
+</FeatureSwitch>
 
 @if (_selectedDates.Any())
 {
@@ -258,6 +293,7 @@
     private bool _showLegendDetail;
     private SelectedActivity? _selectedActivity;
     private YearSpan _yearSpan = new();
+    private bool _showShareOptions;
 
     [Parameter] public Guid Id { get; set; }
     [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
@@ -420,6 +456,7 @@
     private Task HandleViewOptionsClick()
     {
         _showLegendDetail = false;
+        _showShareOptions = false;
         _showViewOptions = !_showViewOptions;
 
         return Task.CompletedTask;
@@ -440,6 +477,46 @@
         }
 
         return Task.CompletedTask;
+    }
+
+    private Task HandleShareOptionsAsync()
+    {
+        _showLegend = false;
+        _showViewOptions = false;
+        _showShareOptions = !_showShareOptions;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Export a single calendar details as a json file.
+    /// Can be used as a backup or direct upload to the public blob storage gallery. 
+    /// </summary>
+    private async Task HandleExportAsync()
+    {
+        var exportAsJson = JsonSerializer.Serialize(_calendar);
+        var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
+        await FileManager.SaveAsAsync($"cal_{_calendar.Id}.json", exportAsBytes);
+    }
+
+    /// <summary>
+    /// Simple quick method to upload a calendar to blob storage so that it can be made available publicly.
+    /// Overwrite any existing publication with the latest changes.
+    /// </summary>
+    private async Task HandlePublishAsync()
+    {
+        var isPublished = _calendar.Publication != null;
+
+        if (!isPublished)
+        {
+            _calendar.Publication = new CalendarPublication
+            {
+                Id = _calendar.Id
+            };
+        }
+
+        await CalendarStorage.UpdateAsync(_calendar);
+
+        await CalendarRepository.SaveItemAsync(_calendar);
     }
 
     private class SelectedActivity
