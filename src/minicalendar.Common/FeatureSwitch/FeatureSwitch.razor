@@ -16,19 +16,16 @@
 
     [Parameter] public required string Name { get; set; } = string.Empty;
     [Parameter] public required RenderFragment ChildContent { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    
+    protected override async Task OnParametersSetAsync()
     {
-        if (firstRender)
-        {
-            var isVisible = await LocalStorage.GetItemAsync<bool?>($"Common_FeatureSwitch_{Name.ToLower()}");
-            if (isVisible == true)
-            {
-                _isVisible = true;
-            }
-        }
+        await base.OnParametersSetAsync();
 
-        await base.OnAfterRenderAsync(firstRender);
+        var isVisible = await LocalStorage.GetItemAsync<bool?>($"Common_FeatureSwitch_{Name.ToLower()}");
+        if (isVisible == true)
+        {
+            _isVisible = true;
+        }
     }
 
 }
