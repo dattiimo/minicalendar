@@ -19,6 +19,10 @@ When IsEditable is true an edit button is displayed.
         <div class="grow">
             <div class="flex text-lg sm:text-xl">
                 <span>@item.Title</span>
+                @if (item.IsPublished)
+                {
+                    <GlobeAltIcon class="size-4 sm:size-5 text-slate-400 mx-2 sm:mx-4 font" title="Published"/>
+                }
             </div>
             <div class="text-sm text-slate-400 hidden sm:block">
                 @if (ShowDescription && !string.IsNullOrEmpty(item.Description))

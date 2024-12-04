@@ -8,4 +8,5 @@ public class CalendarListItem
     public bool IsEditable { get; set; }
     public string Badge { get; set; } = string.Empty;
     public DateTime? LastModifiedAt { get; set; }
+    public bool IsPublished { get; set; }
 }

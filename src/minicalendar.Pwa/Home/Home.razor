@@ -54,7 +54,8 @@
                 Title = x.Title,
                 Description = x.Description,
                 LastModifiedAt = x.LastModifiedAt,
-                IsEditable = true
+                IsEditable = true,
+                IsPublished = x.Publication != null
             }).ToList();
             return;
         }
