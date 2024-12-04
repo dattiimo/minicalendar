@@ -115,9 +115,9 @@
 </ViewOrientation>
 <ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement>
 
-@* Aside panel *@
+@* View options panel *@
 <Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
-    @* view orientation *@
+    @* Orientation *@
     <div class="mb-8">
         <div class="">
             <label class="text-lg">Orientation</label>
@@ -143,6 +143,7 @@
     </div>
 </Drawer>
 
+@* Activity details panel *@
 <Drawer @bind-IsOpen="_showLegendDetail" Title="">
     @if (_selectedActivity != null)
     {
@@ -165,6 +166,7 @@
     }
 </Drawer>
 
+@* Sharing options panel *@
 <FeatureSwitch Name="plus">
     <Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
         <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
@@ -177,6 +179,9 @@
                 </div>
                 <div class="mt-2 sm:mt-2">
                     <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
+                </div>
+                <div class="mt-2 sm:mt-2">
+                    <PrimaryTextAction OnClickAsync="HandleUnpublishAsync">Remove</PrimaryTextAction>
                 </div>
             </div>
         }
@@ -403,6 +408,23 @@
 
         await CalendarStorage.UpdateAsync(_calendar);
 
+        await CalendarRepository.SaveItemAsync(_calendar);
+    }
+
+    /// <summary>
+    /// Undo publishing by deleting a published calendar from blob storage.
+    /// </summary>
+    private async Task HandleUnpublishAsync()
+    {
+        var isPublished = _calendar.Publication != null;
+        if (!isPublished)
+        {
+            return;
+        }
+
+        await CalendarStorage.RemoveAsync(_calendar.Id);
+        
+        _calendar.Publication = null;
         await CalendarRepository.SaveItemAsync(_calendar);
     }
 

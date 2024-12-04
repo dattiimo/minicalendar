@@ -4,4 +4,5 @@ public interface ICalendarStorage
 {
     public Task<Calendar> GetAsync(Guid id);
     public Task UpdateAsync(Calendar calendar);
+    public Task RemoveAsync(Guid id);
 }
