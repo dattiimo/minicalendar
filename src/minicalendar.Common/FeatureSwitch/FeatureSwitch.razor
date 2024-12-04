@@ -3,8 +3,7 @@
     via a localStorage setting. 
 *@
 
-@using Blazored.LocalStorage
-@inject ILocalStorageService LocalStorage
+@inject IFeatureSettings FeatureSettings
 
 @if (_isVisible)
 {
@@ -21,11 +20,7 @@
     {
         await base.OnParametersSetAsync();
 
-        var isVisible = await LocalStorage.GetItemAsync<bool?>($"Common_FeatureSwitch_{Name.ToLower()}");
-        if (isVisible == true)
-        {
-            _isVisible = true;
-        }
+        _isVisible = await FeatureSettings.IsFeatureEnabledAsync(Name);
     }
 
 }
