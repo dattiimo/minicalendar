@@ -9,6 +9,7 @@ using minicalendar.Common.FileManager;
 using minicalendar.Common.Privacy.CookiePolicy;
 using minicalendar.Common.ViewOrientation;
 using minicalendar.Pwa;
+using minicalendar.Pwa.Calendars;
 using minicalendar.Pwa.Calendars.Templates;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -40,5 +41,6 @@ builder.Services.AddScoped<DateDistance, DateDistance>();
 builder.Services.AddScoped<TrackFactory, TrackFactory>();
 builder.Services.AddScoped<FileManagerService, FileManagerService>();
 builder.Services.AddScoped<ICalendarStorage, CalendarStorageForBlobStorage>();
+builder.Services.AddScoped<CalendarViewOptionsStore, CalendarViewOptionsStore>();
 
 await builder.Build().RunAsync();
