@@ -107,7 +107,7 @@
 }
 
 /*
-! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -848,6 +848,11 @@ video {
 
 .aspect-square {
   aspect-ratio: 1 / 1;
+}
+
+.size-4 {
+  width: 1rem;
+  height: 1rem;
 }
 
 .size-5 {
@@ -16672,6 +16677,11 @@ video {
     margin-right: auto;
   }
 
+  .sm\:mx-4 {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+
   .sm\:mb-4 {
     margin-bottom: 1rem;
   }
@@ -16716,6 +16726,10 @@ video {
     margin-top: 1rem;
   }
 
+  .sm\:mt-8 {
+    margin-top: 2rem;
+  }
+
   .sm\:block {
     display: block;
   }
@@ -16740,6 +16754,16 @@ video {
   .sm\:size-8 {
     width: 2rem;
     height: 2rem;
+  }
+
+  .sm\:size-4 {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .sm\:size-5 {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .sm\:h-full {

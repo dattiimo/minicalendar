@@ -22,6 +22,7 @@
 @inject ISelectedCalendarDates SelectedDates
 @inject FileManagerService FileManager
 @inject ICalendarStorage CalendarStorage
+@inject CalendarViewOptionsStore ViewOptionsStore
 
 <CalendarTour Enabled="@(Tour == true)"></CalendarTour>
 
@@ -113,11 +114,11 @@
         </div>
     </article>
 </ViewOrientation>
-<ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement>
+@* <ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement> *@
 
-@* Aside panel *@
+@* View options panel *@
 <Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
-    @* view orientation *@
+    @* Orientation *@
     <div class="mb-8">
         <div class="">
             <label class="text-lg">Orientation</label>
@@ -141,8 +142,12 @@
     <div>
         <Toggle Title="Display Dates" @bind-Value="_showDates">The date will be shown on all days.</Toggle>
     </div>
+    <div class="mb-8 sm:mt-16 flex justify-end">
+        <SecondaryAction OnClickAsync="HandleViewOptionsChangeAsync">Apply to all calendars</SecondaryAction>
+    </div>
 </Drawer>
 
+@* Activity details panel *@
 <Drawer @bind-IsOpen="_showLegendDetail" Title="">
     @if (_selectedActivity != null)
     {
@@ -165,6 +170,7 @@
     }
 </Drawer>
 
+@* Sharing options panel *@
 <FeatureSwitch Name="plus">
     <Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
         <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
@@ -177,6 +183,9 @@
                 </div>
                 <div class="mt-2 sm:mt-2">
                     <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
+                </div>
+                <div class="mt-2 sm:mt-2">
+                    <PrimaryTextAction OnClickAsync="HandleUnpublishAsync">Remove</PrimaryTextAction>
                 </div>
             </div>
         }
@@ -209,6 +218,14 @@
     [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
     [Parameter] [SupplyParameterFromQuery] public bool? Tour { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        var viewOptions = await ViewOptionsStore.GetAsync();
+        PopulateViewOptions(viewOptions);
+
+        await base.OnInitializedAsync();
+    }
+    
     protected override async Task OnParametersSetAsync()
     {
         var now = TimeProvider.GetLocalNow().DateTime;
@@ -404,6 +421,47 @@
         await CalendarStorage.UpdateAsync(_calendar);
 
         await CalendarRepository.SaveItemAsync(_calendar);
+    }
+
+    /// <summary>
+    /// Undo publishing by deleting a published calendar from blob storage.
+    /// </summary>
+    private async Task HandleUnpublishAsync()
+    {
+        var isPublished = _calendar.Publication != null;
+        if (!isPublished)
+        {
+            return;
+        }
+
+        await CalendarStorage.RemoveAsync(_calendar.Id);
+        
+        _calendar.Publication = null;
+        await CalendarRepository.SaveItemAsync(_calendar);
+    }
+
+    private async Task HandleViewOptionsChangeAsync()
+    {
+        await ViewOptionsStore.SaveAsync(GetViewOptions());
+        _showViewOptions = false;
+    }
+
+    private CalendarViewOptions GetViewOptions()
+    {
+        var options = new CalendarViewOptions
+        {
+            DisplayDates = _showDates,
+            Orientation = _orientation,
+            ShowLegend = _showLegend
+        };
+        return options;
+    }
+
+    private void PopulateViewOptions(CalendarViewOptions viewOptions)
+    {
+        _showDates = viewOptions.DisplayDates;
+        _orientation = viewOptions.Orientation;
+        _showLegend = viewOptions.ShowLegend;
     }
 
     private class SelectedActivity

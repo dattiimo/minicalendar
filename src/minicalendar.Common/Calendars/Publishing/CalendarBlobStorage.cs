@@ -29,6 +29,19 @@ public class CalendarStorageForBlobStorage(ILocalStorageService localStorage) : 
         }
         return calendar;
     }
+    
+    public async Task RemoveAsync(Guid id)
+    {
+        var blob = await GetBlobClient(GetFileName(id));
+
+        var exists = await blob.ExistsAsync();
+        if (!exists)
+        {
+            return;
+        }
+
+        await blob.DeleteAsync();
+    }
 
     /// <summary>
     /// Returns the filename used to save the calendar
