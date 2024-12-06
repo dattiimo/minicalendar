@@ -1,0 +1,26 @@
+﻿@*
+    Hide the child content unless the feature with the given Name has been enabled 
+    via a localStorage setting. 
+*@
+
+@inject IFeatureSettings FeatureSettings
+
+@if (_isVisible)
+{
+    @ChildContent
+}
+
+@code {
+    private bool _isVisible;
+
+    [Parameter] public required string Name { get; set; } = string.Empty;
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _isVisible = await FeatureSettings.IsFeatureEnabledAsync(Name);
+    }
+
+}

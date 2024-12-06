@@ -9,3 +9,6 @@ node_modules/
 # Visual Studio
 .vs/
 *.sln.DotSettings.user
+
+# PowerShell scripts used for local development
+*.ps1

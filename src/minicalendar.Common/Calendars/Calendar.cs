@@ -26,6 +26,8 @@ public class Calendar : IValidatableObject
     public DateOnly StartDate { get; set; } = DateTime.Now.ToDateOnly().StartOfYear();
     public List<Activity> Events { get; set; } = [];
     public List<Activity> Activities { get; set; } = [];
+    
+    public CalendarPublication? Publication { get; set; }
 
     public void PopulateFrom(Calendar src)
     {
@@ -40,14 +42,14 @@ public class Calendar : IValidatableObject
         SprintInterval = src.SprintInterval;
     }
 
-    public Calendar Duplicate()
+    public Calendar Duplicate(string postfix = "")
     {
         var now = DateTime.Now;
         var cal = new Calendar();
         cal.PopulateFrom(this);
         cal.CreatedAt = now;
         cal.LastModifiedAt = now;
-        cal.Title = Title + " - copy"; 
+        cal.Title = Title + postfix; 
         foreach (var evt in Activities)
         {
             var newActivity = new Activity();

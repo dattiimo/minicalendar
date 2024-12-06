@@ -1,0 +1,213 @@
+﻿@page "/data/export"
+@using System.Text.Json
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.FileManager
+@using minicalendar.Common.Alerts
+@inject ICalendarRepository CalendarRepo
+@inject TimeProvider TimeProvider
+@inject NavigationManager NavManager
+@inject FileManagerService FileManager
+
+<Header>
+    <div></div>
+    <div><IconAction OnClick="HandleCloseAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
+</Header>
+
+<article>
+    <Container>
+        <h1 class="text-4xl mb-2 font-medium">Your Data</h1>
+        <div class="text-base mb-12">
+            <p class="text-lg">Export all of your data from this device. Exports can be used for back ups or importing onto another device.</p>
+        </div>
+        <div class="mb-12 flex flex-row justify-between">
+            <div class="grow">
+                <label class="text-2xl">Export data</label>
+                <p class="text-gray-500 text-base md:text-lg">Export all calendars and settings.</p>
+            </div>
+            <div><PrimaryButton OnClickAsync="HandleExportAsync">Export</PrimaryButton></div>
+        </div>
+        <div class="mb-12 flex flex-row justify-between">
+            <div class="grow">
+                <label class="text-2xl">Import data</label>
+                @if (_isLoaded)
+                {
+                    <p class="text-gray-500 text-base md:text-lg">Select the calendars to import from the list below.</p>
+                }
+                else
+                {
+                    <p class="text-gray-500 text-base md:text-lg">Select a previously exported data file to import calendars from.</p>
+                }
+            </div>
+            <div>
+                @if (!_isLoaded) 
+                {
+                    <InputFile OnChange="HandleUploadAsync" class=""/>
+                }
+            </div>
+        </div>
+        @if (_showValidationError)
+        {
+            <AlertValidation>@_validationText</AlertValidation>
+        }
+        @if (_isLoaded)
+        {
+            <div class="px-2 sm:px-8">
+                <ul class="">
+                    @foreach (var import in _importedItems)
+                    {
+                        <li class="">
+                            <label class="flex justify-start my-2 rounded-lg border-2 cursor-pointer p-2 sm:p-4 text-base sm:text-lg
+                                    @(import.IsSelected ? "border-green-400" : "border-gray-300")">
+                                <InputCheckbox @bind-Value="@import.IsSelected" />
+                                <span class="ms-2 sm:ms-4">@import.Title</span>
+                            </label>
+                        </li>
+                    }
+                </ul>
+                <div class="mt-4 mt-8">
+                    <PrimaryButton OnClickAsync="HandleImportAsync">Import selected</PrimaryButton>
+                    <PrimaryButton OnClickAsync="HandleCancelAsync">Cancel</PrimaryButton>
+                </div>
+            </div>
+        }
+
+    </Container>
+</article>
+
+<FileManager />
+
+@code {
+    private Calendar[] _importedCalendars = [];
+    private DataImportItem[] _importedItems = [];
+    private bool _isLoaded;
+    private bool _showValidationError;
+    private string _validationText = string.Empty;
+
+    private async Task HandleExportAsync()
+    {
+        var calendars = await CalendarRepo.GetAllAsync();
+
+        var export = new DataExport
+        {
+            CreatedAt = TimeProvider.GetUtcNow().DateTime,
+            Calendars = calendars.ToArray()
+        };
+        var exportAsJson = JsonSerializer.Serialize(export);
+        var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
+
+        await FileManager.SaveAsAsync($"minicalendar-export-{TimeProvider.GetLocalNow().Date:yyyyMMddHHmm}.json", exportAsBytes);
+    }
+
+    private async Task HandleUploadAsync(InputFileChangeEventArgs e)
+    {
+        _isLoaded = true; // hide import immediately
+        HideValidation(); // hide previous errors
+
+        try
+        {
+            var file = e.File;
+            var import = await JsonSerializer.DeserializeAsync<DataExport>(file.OpenReadStream(),
+                new JsonSerializerOptions
+                {
+                    MaxDepth = 10 // ensure all activities are deserialised
+                });
+
+            // The only validation is to check whether the import file deserialised correctly
+            if (import == null)
+            {
+                ShowValidation("The chosen file is not a supported export file. Please select a previously exported file");
+                _isLoaded = false;
+                return;
+            }
+
+            // load the imported calendars
+            _importedCalendars = import.Calendars;
+            _importedItems = _importedCalendars.Select(x => new DataImportItem
+            {
+                Id = x.Id,
+                Title = x.Title
+            }).ToArray();
+        }
+        catch
+        {
+            ShowValidation("The chosen file is not a supported export file. Please select a previously exported file");
+            _isLoaded = false;
+        }
+    }
+
+    private Task HandleCloseAsync()
+    {
+        // Close and redirect back to the home page
+        NavManager.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCancelAsync()
+    {
+        // Reset the import
+        _importedItems = [];
+        _importedCalendars = [];
+        _isLoaded = false;
+        HideValidation();
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleImportAsync()
+    {
+        var selectedItems = _importedItems.Where(x => x.IsSelected).ToList();
+        // At least one calendar must be selected to import
+        if (!selectedItems.Any())
+        {
+            ShowValidation("Select a calendar to import.");
+            return;
+        }
+
+        // Import the selected calendars
+        foreach (var selected in selectedItems)
+        {
+            await ImportItemAsync(selected.Id);
+        }
+
+        NavManager.NavigateTo("/");
+    }
+
+    private async Task ImportItemAsync(Guid id)
+    {
+        var importedCalendar = _importedCalendars.SingleOrDefault(x => x.Id == id);
+        if (importedCalendar == null)
+        {
+            return; // nothing to do
+        }
+
+        // Duplicate the calendar so originals are not overwritten.
+        // Append [import {timestamp}] to the end of titles so imported calendars are easily identifiable.
+        var postfix = $" [import {TimeProvider.GetLocalNow():yyyyMMddHHmm}]";
+        var calendar = importedCalendar.Duplicate(postfix: postfix);
+        await CalendarRepo.SaveItemAsync(calendar);
+    }
+
+    private void ShowValidation(string text)
+    {
+        _validationText = text;
+        _showValidationError = true;
+    }
+
+    private void HideValidation()
+    {
+        _showValidationError = false;
+    }
+
+    private class DataExport
+    {
+        public DateTime CreatedAt { get; init; }
+        public Calendar[] Calendars { get; init; } = [];
+    }
+
+    private class DataImportItem
+    {
+        public Guid Id { get; init; }
+        public string Title { get; init; } = string.Empty;
+        public bool IsSelected { get; set; }
+    }
+
+}

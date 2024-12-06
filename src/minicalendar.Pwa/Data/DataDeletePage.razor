@@ -1,9 +1,8 @@
-﻿@page "/privacy/data/delete"
+﻿@page "/data/delete"
 @using Blazored.LocalStorage;
-@* @inject SiteNavigator Nav *@
 @inject NavigationManager Nav
 @inject ILocalStorageService LocalStorage
-@inject ILogger<DataPage> Logger
+@inject ILogger<DataDeletePage> Logger
 
 <Header>
     <div><IconAction OnClick="HandleCancelClickAsync" Title="Cancel"><XMarkIcon class="size-6 sm:size-8"></XMarkIcon></IconAction></div>
@@ -59,13 +58,12 @@ else
         Logger.LogWarning("All data has been deleted.");
         // delete all local storage
         await LocalStorage.ClearAsync();
-        //await CalendarStore.InitialiseAsync();
-        Nav.NavigateTo("privacy/data/removed");
+        Nav.NavigateTo("data/removed");
     }
 
     private Task HandleCancelClickAsync()
     {
-        Nav.NavigateTo("privacy/data");
+        Nav.NavigateTo("data/privacy");
         return Task.CompletedTask;
     }
 

@@ -20,6 +20,7 @@
             @(IsAlternateDay ? " bg-gray-100" : " bg-white")"
         @onclick="HandleClickAsync"
         @onclick:stopPropagation
+        @onclick:preventDefault
         @attributes="Attributes">
     <div class="w-full h-full flex items-center justify-center @GetBackgroundWithSelected(_firstActivity)">
         <div class="inline-block @(IsCurrentDay ? "flex rounded rounded-full w-full m-1 border-2 border-red-800 aspect-square place-content-center items-center text-red-800 font-medium" : "")">

@@ -1,4 +1,4 @@
-﻿@page "/privacy/data"
+﻿@page "/data/privacy"
 @using minicalendar.Common.Forms
 @using minicalendar.Common.Privacy.CookiePolicy
 @* @inject DataPolicy DataPolicy *@
@@ -41,11 +41,10 @@
 
         <div class="my-20">
             <ActionDanger Title="Delete all data" Text="Delete all data"
-                          OnClickAsync="@(() => Nav.NavigateTo("privacy/data/delete"))">Remove all app data stored on the device.</ActionDanger>
+                          OnClickAsync="@(() => Nav.NavigateTo("data/delete"))">Remove all app data stored on the device.</ActionDanger>
         </div>
-        <div class="my-20">
-            <PrimaryLink Uri="cal/import">Import data</PrimaryLink>
-        </div>
+
+        <FormAction Title="Import/Export" Text="Import/Export" OnClickAsync="HandleExportAsync">Export all data or import from a previous export file.</FormAction>
     </Container>
 </article>
 
@@ -71,6 +70,12 @@
         // }
         //await Nav.NavigateToAsync("/", forceLoad: true);
         Nav.NavigateTo("/", forceLoad: true);
+        return Task.CompletedTask;
+    }
+
+    private Task HandleExportAsync()
+    {
+        Nav.NavigateTo("data/export");
         return Task.CompletedTask;
     }
 

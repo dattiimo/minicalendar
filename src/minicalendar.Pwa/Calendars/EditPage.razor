@@ -1,9 +1,8 @@
 ﻿@page "/cal/{id:guid}/edit"
-@using System.ComponentModel.DataAnnotations
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
-@* @inject SiteNavigator Nav *@
+@using minicalendar.Common.FeatureSwitch
 @inject NavigationManager Nav
 @inject ICalendarRepository CalendarRepo
 
@@ -108,7 +107,7 @@
 
     private async Task HandleDuplicateClickAsync()
     {
-        var cal = _model.Duplicate();
+        var cal = _model.Duplicate(postfix: " - copy");
         await CalendarRepo.SaveItemAsync(cal);
         Nav.NavigateTo($"cal/{cal.Id}");
     }
