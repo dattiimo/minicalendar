@@ -114,7 +114,7 @@
         </div>
     </article>
 </ViewOrientation>
-@* <ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement> *@
+<ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement>
 
 @* View options panel *@
 <Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
