@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
-using Blazored.LocalStorage;
 using Azure.Storage.Blobs;
 
 namespace minicalendar.Common.Calendars.Publishing;
 
-public class CalendarStorageForBlobStorage(ILocalStorageService localStorage) : ICalendarStorage
+public class CalendarStorageForBlobStorage(IBlobStorageConnectionString connectionString) : ICalendarStorage
 {
     public async Task UpdateAsync(Calendar calendar)
     {
@@ -52,22 +51,11 @@ public class CalendarStorageForBlobStorage(ILocalStorageService localStorage) : 
         return $"cal_{id}.json";
     }
 
-    /// <summary>
-    /// Return a connection string for a blob storage instance.
-    /// To prevent exposing the blob storage container publicly, the connection string is store locally
-    /// within my browser for now.
-    /// </summary>
-    private async Task<string> GetConnectionStringFromLocalStorage()
-    {
-        var connString = await localStorage.GetItemAsync<string>("BlobStorageConnectionString");
-        return connString ?? string.Empty;
-    }
-
     private async Task<BlobClient> GetBlobClient(string fileName)
     {
-        var connectionString = await GetConnectionStringFromLocalStorage();
+        var connString = await connectionString.GetConnectionStringAsync();
         // Calendars are stored in the "calendars" container
-        var container = new BlobContainerClient(connectionString, "calendars");
+        var container = new BlobContainerClient(connString, "calendars");
         var blobClient = container.GetBlobClient(fileName);
         return blobClient;
     }
