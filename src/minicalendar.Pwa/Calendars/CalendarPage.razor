@@ -176,7 +176,7 @@
         <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
         @if (_calendar.Publication != null)
         {
-            var publishUrl = $"http://minicalendar.app/gallery/cal/{_calendar.Publication.Id}";
+            var publishUrl = $"http://minicalendar.app/cal/{_calendar.Publication.Id}";
             <div class="text-sm text-gray-500">
                 <div class="mt-2 sm:mt-2">
                     <span>ID: </span><span>@_calendar.Publication.Id</span>
