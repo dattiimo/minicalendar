@@ -12,3 +12,6 @@ node_modules/
 
 # PowerShell scripts used for local development
 *.ps1
+
+# Ignore development configuration that may contain secrets
+*.Development.Json
