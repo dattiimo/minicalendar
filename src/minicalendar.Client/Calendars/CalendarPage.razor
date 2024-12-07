@@ -1,0 +1,73 @@
+﻿@page "/cal/{id:guid}/{slug?}"
+@using minicalendar.Client.Layout
+@using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Publishing
+@using minicalendar.Common.Core
+@using minicalendar.Common.ViewOrientation
+@using minicalendar.Common.YearSpan
+@layout GalleryLayout
+@inject ICalendarStorage CalendarStorage
+@inject TimeProvider TimeProvider
+
+@* A YearSpan doesn't currently render correctly unless it is wrapped in a ViewOrientation so for now, 
+the calendar is just displayed in portrait mode. In future it could easily be user configured. *@
+<ViewOrientation Orientation="@ViewOrientationType.Portrait">
+    <article class="">
+        @* Calendar title and description *@
+        <div class="">
+            <h1 class="flex justify-center text-2xl sm:text-4xl text-gray-700">@_calendar.Title</h1>
+            @if (!string.IsNullOrEmpty(_calendar.Description))
+            {
+                <h2 class="flex justify-center mt-2 sm:mt-4 text-sm sm:text-base text-gray-900">@_calendar.Description</h2>
+            }
+        </div>
+
+        @* Display calendar and optional legend *@
+        @* Small screens in portrait display the legend below the calendar. *@
+        @* Larger screens in portrait display the legend fixed to the right. *@
+        <div class="flex mt-16 sm:mt-24 vport:flex-col vport:md:flex-row vport:md:container vport:md:mx-auto vport:justify-center
+                    vland:flex-col vland:justify-start">
+            @* Calendar *@
+            <div class="vland:overflow-x-scroll vland:md:overflow-x-visible vland:py-4 vport:flex vport:flex-col">
+                <div class="vland:lg:min-w-[1900px] vport:md:min-w-[450px] vport:mb-8">
+                    <YearSpan FromDate="_calendar.StartDate"
+                              CurrentDate="_today"
+                              Activities="_calendar.Activities"
+                              ShowAllDates="true"
+                              EnableSprint="_calendar.EnableSprint"
+                              SprintStartDate="_calendar.SprintStartDate"
+                              SprintInterval="_calendar.SprintInterval">
+                    </YearSpan>
+                </div>
+            </div>
+            @* Aside section *@
+            <aside class="vport:md:ms-10 vport:md:mt-8 vland:my-8 w-64 max-w-64">
+                @* Legend *@
+                <div class="vport:md:sticky vport:md:top-28">
+                    <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id"></Legend>
+                </div>
+            </aside>
+        </div>
+        
+    </article>
+</ViewOrientation>
+
+@code {
+    private Calendar _calendar = new();
+    private DateOnly _today;
+ 
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public string? Slug { get; set; }
+    [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var now = TimeProvider.GetLocalNow().DateTime;
+        _today = Today ?? now.ToDateOnly();
+
+        _calendar = await CalendarStorage.GetAsync(Id);
+
+        await base.OnInitializedAsync();
+    }
+
+}

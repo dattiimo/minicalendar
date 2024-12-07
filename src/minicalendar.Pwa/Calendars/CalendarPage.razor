@@ -114,7 +114,7 @@
         </div>
     </article>
 </ViewOrientation>
-<ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement>
+@* <ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement> *@
 
 @* View options panel *@
 <Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
@@ -176,7 +176,7 @@
         <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
         @if (_calendar.Publication != null)
         {
-            var publishUrl = $"http://minicalendar.app/gallery/cal/{_calendar.Publication.Id}";
+            var publishUrl = $"http://minicalendar.app/cal/{_calendar.Publication.Id}";
             <div class="text-sm text-gray-500">
                 <div class="mt-2 sm:mt-2">
                     <span>ID: </span><span>@_calendar.Publication.Id</span>
@@ -223,14 +223,14 @@
         var viewOptions = await ViewOptionsStore.GetAsync();
         PopulateViewOptions(viewOptions);
 
+        var now = TimeProvider.GetLocalNow().DateTime;
+        _today = Today ?? now.ToDateOnly();
+        
         await base.OnInitializedAsync();
     }
     
     protected override async Task OnParametersSetAsync()
     {
-        var now = TimeProvider.GetLocalNow().DateTime;
-        _today = Today ?? now.ToDateOnly();
-
         _calendar = await CalendarRepository.GetByIdAsync(Id);
         if (_calendar == Calendar.Empty)
         {

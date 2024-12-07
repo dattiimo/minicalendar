@@ -43,4 +43,6 @@ builder.Services.AddScoped<FileManagerService, FileManagerService>();
 builder.Services.AddScoped<ICalendarStorage, CalendarStorageForBlobStorage>();
 builder.Services.AddScoped<CalendarViewOptionsStore, CalendarViewOptionsStore>();
 
+builder.Services.AddScoped<IBlobStorageConnectionString, BlobStorageConnectionStringFromLocalStorage>();
+
 await builder.Build().RunAsync();
