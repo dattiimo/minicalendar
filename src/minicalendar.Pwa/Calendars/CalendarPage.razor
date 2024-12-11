@@ -114,7 +114,6 @@
         </div>
     </article>
 </ViewOrientation>
-@* <ScrollToElement ElementId="@("day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd"))"></ScrollToElement> *@
 
 @* View options panel *@
 <Drawer @bind-IsOpen="_showViewOptions" Title="" IsModal="true">
@@ -201,6 +200,8 @@
                     OnCreate="HandleCreateActivityClickAsync" />
 }
 
+<ScrollToElement ElementId="@_scrollToName"></ScrollToElement>
+
 @code {
     private DateOnly _today;
     private Calendar _calendar = new();
@@ -213,6 +214,7 @@
     private SelectedActivity? _selectedActivity;
     private YearSpan _yearSpan = new();
     private bool _showShareOptions;
+    private string _scrollToName = string.Empty;
 
     [Parameter] public Guid Id { get; set; }
     [Parameter] [SupplyParameterFromQuery] public DateOnly? Today { get; set; }
@@ -220,17 +222,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Logger.LogInformation("OnInitializedAsync");
         var viewOptions = await ViewOptionsStore.GetAsync();
         PopulateViewOptions(viewOptions);
 
         var now = TimeProvider.GetLocalNow().DateTime;
         _today = Today ?? now.ToDateOnly();
+        Logger.LogInformation($"today is {_today}");
         
         await base.OnInitializedAsync();
     }
     
     protected override async Task OnParametersSetAsync()
     {
+        Logger.LogInformation("OnParametersSetAsync");
         _calendar = await CalendarRepository.GetByIdAsync(Id);
         if (_calendar == Calendar.Empty)
         {
@@ -241,6 +246,16 @@
         await CalendarRepository.RecordView(_calendar);
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_today > DateOnly.MinValue)
+        {
+            _scrollToName = "day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private Task OnLegendActivitySelect(Activity e)
