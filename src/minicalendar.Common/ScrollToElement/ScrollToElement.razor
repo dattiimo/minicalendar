@@ -1,9 +1,10 @@
 ﻿@*
     Automatically scrolls the page to the given element ID.
 *@
-
+@using Microsoft.Extensions.Logging
 @using Microsoft.JSInterop
 @inject IJSRuntime Js
+@inject ILogger<ScrollToElement> Logger
 
 @code {
     private DotNetObjectReference<ScrollToElement>? _selfReference;
@@ -12,12 +13,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender && !string.IsNullOrEmpty(ElementId))
-        {
-            _selfReference = DotNetObjectReference.Create(this);
-            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./_content/minicalendar.Common/ScrollToElement/ScrollToElement.razor.js");
-            await module.InvokeAsync<string>("scrollToElement", ElementId);
-        }
+        if (string.IsNullOrEmpty(ElementId))
+            return;
+        Logger.LogInformation($"Auto scrolling to {ElementId}");;
+        _selfReference = DotNetObjectReference.Create(this);
+        var module = await Js.InvokeAsync<IJSObjectReference>("import", "./_content/minicalendar.Common/ScrollToElement/ScrollToElement.razor.js");
+        await module.InvokeAsync<string>("scrollToElement", ElementId);
 
         await base.OnAfterRenderAsync(firstRender);
     }
