@@ -1,7 +1,7 @@
 export function scrollToElement(elementId) {
     const elm = document.getElementById(elementId);
     if (elm) {
-        console.info("Scrolling to " + elementId)
+        console.debug("Auto scrolling to " + elementId)
         elm.scrollIntoView({behavior: 'smooth'});
     }
 }

@@ -12,6 +12,7 @@ using minicalendar.Pwa;
 using minicalendar.Pwa.Calendars;
 using minicalendar.Pwa.Calendars.Templates;
 
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -20,7 +21,14 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Logging.SetMinimumLevel(LogLevel.Trace);
+// Enable trace logging in the development environment.
+// Level is set in appsettings.json.
+switch (builder.Configuration["Logging:LogLevel:Default"])
+{
+    case "Trace": builder.Logging.SetMinimumLevel(LogLevel.Trace);
+        break;
+}
+
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IFeatureSettings, FeatureSettingsForLocalStorage>();
