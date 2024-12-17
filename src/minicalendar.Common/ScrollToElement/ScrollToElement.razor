@@ -7,18 +7,39 @@
 @inject ILogger<ScrollToElement> Logger
 
 @code {
-    private DotNetObjectReference<ScrollToElement>? _selfReference;
+    private IJSObjectReference? _module;
 
     [Parameter] public string ElementId { get; set; } = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            try
+            {
+                _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                    "./_content/minicalendar.Common/ScrollToElement/ScrollToElement.razor.js");
+            }
+            catch
+            {
+                @* JS import may fail when offline so catch any errors and ignore them. If the page doesn't auto scroll the user can still continue. *@
+            }
+        }
+
         if (string.IsNullOrEmpty(ElementId))
+        {
             return;
-        Logger.LogInformation($"Auto scrolling to {ElementId}");;
-        _selfReference = DotNetObjectReference.Create(this);
-        var module = await Js.InvokeAsync<IJSObjectReference>("import", "./_content/minicalendar.Common/ScrollToElement/ScrollToElement.razor.js");
-        await module.InvokeAsync<string>("scrollToElement", ElementId);
+        }
+
+        if (_module is not null)
+        {
+            Logger.LogInformation($"Auto scrolling to {ElementId}");
+            await _module.InvokeVoidAsync("scrollToElement", ElementId);
+        }
+        else
+        {
+            Logger.LogInformation($"Script file not loaded");
+        }
 
         await base.OnAfterRenderAsync(firstRender);
     }
