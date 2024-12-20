@@ -13,6 +13,10 @@
 the calendar is just displayed in portrait mode. In future it could easily be user configured. *@
 <ViewOrientation Orientation="@ViewOrientationType.Portrait">
     <article class="">
+        <div class="flex items-center mb-4">
+            <a class="flex items-center" href="gallery" title="Gallery"><ArrowLeftIcon class="size-4 me-2"/>Gallery</a>
+        </div>
+        
         @* Calendar title and description *@
         <div class="">
             <h1 class="flex justify-center text-2xl sm:text-4xl text-gray-700">@_calendar.Title</h1>
@@ -48,7 +52,7 @@ the calendar is just displayed in portrait mode. In future it could easily be us
                 </div>
             </aside>
         </div>
-        
+
     </article>
 </ViewOrientation>
 

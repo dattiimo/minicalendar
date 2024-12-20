@@ -250,7 +250,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_today > DateOnly.MinValue)
+        if (_today > _calendar.StartDate && _today < _calendar.StartDate.AddYears(1))
         {
             _scrollToName = "day_" + _today.StartOfMonth().AddDays(-14).ToString("yyyyMMdd");
         }
