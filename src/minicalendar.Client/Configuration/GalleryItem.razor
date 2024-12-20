@@ -1,0 +1,10 @@
+﻿<div class="my-2 sm:my-4 hover:underline hover:text-green-500">
+    <a href="cal/@Id/@Slug" title="@Title">@Title</a>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    private string Slug => Uri.EscapeDataString(Title);
+}
