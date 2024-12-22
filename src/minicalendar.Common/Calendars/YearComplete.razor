@@ -1,0 +1,35 @@
+﻿@using minicalendar.Common.Core
+@inject DateDistance DateDistance
+
+@if (_isVisible) {
+    <div class="vport:my-8 vland:my-4">
+        <span class="text-base text-gray-700">Year is <span class="text-red-800 text-lg">@_percentComplete%</span> complete</span>
+    </div>
+}
+
+@code {
+    private bool _isVisible;
+    private int _percentComplete;
+    
+    [Parameter] public DateOnly CurrentDate { get; set; }
+    [Parameter] public DateOnly StartDate { get; set; }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+
+        // The end date is always a year after the start 
+        var endDate = StartDate.AddYears(1);
+
+        // Only display when the current date is within the given year
+        if (CurrentDate < StartDate || CurrentDate >= endDate)
+        {
+            _isVisible = false;
+            return;
+        }
+
+        _percentComplete = DateDistance.PercentageOf(CurrentDate, StartDate, endDate);
+        _isVisible = _percentComplete >= 0;
+    }
+
+}
