@@ -107,7 +107,7 @@
 }
 
 /*
-! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -14472,6 +14472,11 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
+}
+
 .underline {
   text-decoration-line: underline;
 }
@@ -16532,6 +16537,11 @@ video {
   grid-row-start: 2;
 }
 
+.view-portrait .vport\:my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .view-portrait .vport\:mb-8 {
   margin-bottom: 2rem;
 }
@@ -16583,6 +16593,11 @@ video {
 .view-landscape .vland\:my-8 {
   margin-top: 2rem;
   margin-bottom: 2rem;
+}
+
+.view-landscape .vland\:my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .view-landscape .vland\:grid {
@@ -16680,6 +16695,11 @@ video {
   .sm\:mx-auto {
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .sm\:my-4 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
   }
 
   .sm\:mb-4 {

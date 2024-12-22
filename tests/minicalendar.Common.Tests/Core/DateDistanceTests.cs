@@ -76,4 +76,29 @@ public class DateDistanceTests
         Assert.Equal(1, diff.Weeks);
         Assert.Equal(1, diff.Days);
     }
+
+    [Fact]
+    public void PercentageOf_ShouldBeZero_WhenFirstDay()
+    {
+        var from = new DateOnly(2024, 1, 1);
+        var to = from.AddYears(1);
+        var now = new DateOnly(2024, 1, 1);
+
+        var percent = new DateDistance().PercentageOf(now, from, to);
+
+        Assert.Equal(0, percent);
+    }
+
+    [Fact]
+    public void PercentageOf_ShouldBe100_WhenLastDay()
+    {
+        var from = new DateOnly(2024, 1, 1);
+        var to = from.AddYears(1);
+        var now = new DateOnly(2024, 12, 31);
+
+        var percent = new DateDistance().PercentageOf(now, from, to);
+
+        Assert.Equal(100, percent);
+    }
+
 }
