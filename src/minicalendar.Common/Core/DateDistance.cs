@@ -99,4 +99,21 @@ public class DateDistance
         txt += " apart";
         return txt;
     }
+
+    public int PercentageOf(DateOnly date, DateOnly from, DateOnly to)
+    {
+        // Return -1 if date outside of range
+        if (date < from || date > to)
+        {
+            return -1;
+        }
+
+        // Calculate the number of days in a year to allow for leap years 
+        var totalDaysInYear = (to.ToDateTime(TimeOnly.MinValue) - from.ToDateTime(TimeOnly.MinValue)).Days;
+
+        // Calculate the percentage completed
+        var daysCompleted = (date.ToDateTime(TimeOnly.MinValue) - from.ToDateTime(TimeOnly.MinValue)).Days;
+        var percent = (double)daysCompleted / totalDaysInYear * 100;
+        return (int)Math.Round(percent);
+    }
 }
