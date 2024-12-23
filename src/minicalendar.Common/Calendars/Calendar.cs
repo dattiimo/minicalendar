@@ -18,9 +18,6 @@ public class Calendar : IValidatableObject
     public string Title { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
-    public bool EnableSprint { get; set; }
-    public DateOnly? SprintStartDate { get; set; }
-    public int? SprintInterval { get; set; }
 
     [Required(ErrorMessage = "A start date is required.")]
     public DateOnly StartDate { get; set; } = DateTime.Now.ToDateOnly().StartOfYear();
@@ -37,9 +34,6 @@ public class Calendar : IValidatableObject
         Title = src.Title;
         Description = src.Description;
         StartDate = src.StartDate;
-        EnableSprint = src.EnableSprint;
-        SprintStartDate = src.SprintStartDate;
-        SprintInterval = src.SprintInterval;
     }
 
     public Calendar Duplicate(string postfix = "")
@@ -61,20 +55,7 @@ public class Calendar : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EnableSprint)
-        {
-            if (SprintStartDate == null)
-            {
-                yield return new ValidationResult("Start Date is required for Sprint tracks",
-                    new[] {nameof(SprintStartDate)});
-            }
-
-            if (SprintInterval is null or <= 0)
-            {
-                yield return new ValidationResult("Number of days is required for Sprint tracks",
-                    new[] {nameof(SprintInterval)});
-            }
-        }
+        yield break;
     }
 
     public Task AddActivityAsync(Activity evt)

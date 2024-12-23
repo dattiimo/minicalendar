@@ -902,6 +902,18 @@ video {
   height: 100vh;
 }
 
+.h-2\/4 {
+  height: 50%;
+}
+
+.h-3\/5 {
+  height: 60%;
+}
+
+.h-3\/4 {
+  height: 75%;
+}
+
 .max-h-32 {
   max-height: 8rem;
 }
@@ -1084,6 +1096,10 @@ video {
 
 .justify-between {
   justify-content: space-between;
+}
+
+.justify-stretch {
+  justify-content: stretch;
 }
 
 .justify-items-center {
@@ -16739,6 +16755,10 @@ video {
 
   .sm\:mt-4 {
     margin-top: 1rem;
+  }
+
+  .sm\:me-2 {
+    margin-inline-end: 0.5rem;
   }
 
   .sm\:block {
