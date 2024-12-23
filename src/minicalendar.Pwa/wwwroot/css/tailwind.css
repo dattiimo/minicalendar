@@ -14472,11 +14472,6 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
-.text-red-700 {
-  --tw-text-opacity: 1;
-  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
-}
-
 .underline {
   text-decoration-line: underline;
 }
@@ -16590,14 +16585,14 @@ video {
   grid-row-start: 2;
 }
 
-.view-landscape .vland\:my-8 {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
 .view-landscape .vland\:my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.view-landscape .vland\:my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .view-landscape .vland\:grid {
