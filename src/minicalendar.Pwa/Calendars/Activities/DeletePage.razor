@@ -55,7 +55,7 @@
             await CalendarRepo.SaveItemAsync(cal);
         }
 
-        Nav.NavigateTo($"cal/{_calendar.Id}/activities/list");
+        Nav.NavigateTo($"cal/{_calendar.Id}/edit");
     }
     
     private Task HandleCancelClickAsync()

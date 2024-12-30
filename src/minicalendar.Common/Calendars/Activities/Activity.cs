@@ -19,7 +19,6 @@ public class Activity
     [Range(0, 2, ErrorMessage = "A style must be selected.")]
     public int StyleKind { get; set; } = 1;
 
-    [MinLength(1, ErrorMessage = "At least one date must be added.")]
     public List<DateOnly> Dates { get; set; } = [];
 
     public bool IsShown { get; set; }  = true;
