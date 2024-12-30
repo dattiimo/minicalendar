@@ -4,7 +4,6 @@
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
 @using minicalendar.Common
-@* @inject SiteNavigator Nav *@
 @inject NavigationManager Nav
 @inject ISelectedCalendarDates SelectedDates
 @inject ICalendarRepository CalendarRepo
@@ -53,6 +52,9 @@
     
     [Parameter]
     public Guid CalendarId { get; set; }
+    
+    [Parameter, SupplyParameterFromQuery]
+    public int Src { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,13 +90,26 @@
         await cal.AddActivityAsync(_model);
         await CalendarRepo.SaveItemAsync(cal);
         await SelectedDates.ClearAsync();
-        Nav.NavigateTo($"cal/{_calendar.Id}");
+        Nav.NavigateTo(await GetUrl());
     }
 
-    private Task HandleCancelAsync()
+    private async Task HandleCancelAsync()
     {
-        Nav.NavigateTo($"cal/{_calendar.Id}");
-        return Task.CompletedTask;
+        // If the user cancels then clear any selected dates.
+        // Ideally the page that is returned to should be able to handle the selected dates
+        // but currently, if we do not clear the selection then it leaves the calendar page 
+        // in an inconsistent state.
+        await SelectedDates.ClearAsync();
+        Nav.NavigateTo(await GetUrl());
+    }
+
+    private Task<string> GetUrl()
+    {
+        return Src switch
+        {
+            1 => Task.FromResult($"cal/{_calendar.Id}/edit"),
+            _ => Task.FromResult($"cal/{_calendar.Id}")
+        };
     }
 
     private Task HandleStateChangedAsync()

@@ -114,12 +114,12 @@
         }
         evt.PopulateFrom(_model);
         await CalendarRepo.SaveItemAsync(cal);
-        Nav.NavigateTo($"cal/{cal.Id}/activities/list");
+        Nav.NavigateTo($"cal/{cal.Id}/edit");
     }
 
     private Task HandleCancelAsync()
     {
-        Nav.NavigateTo($"cal/{_calendar.Id}/activities/list");
+        Nav.NavigateTo($"cal/{_calendar.Id}/edit");
         return Task.CompletedTask;
     }
 

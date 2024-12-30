@@ -57,7 +57,7 @@
                     </IconAction>
                 </span>
                 <span class="ms-2 sm:ms-4">
-                    <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
+                    <IconAction Title="Settings" OnClick="HandleSettingsClickAsync">
                         <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
                     </IconAction>
                 </span>
@@ -107,7 +107,7 @@
                     @if (_showLegend && !_selectedDates.Any())
                     {
                         <div class="">
-                            <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id"
+                            <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id" Editable="false"
                                     OnActivityClickAsync="OnLegendActivitySelect"></Legend>
                         </div>
                     }
@@ -273,7 +273,6 @@
             Nav.NavigateTo("notfound");
             return;
         }
-
         _yearStart = _calendar.StartDate;
 
         await CalendarRepository.RecordView(_calendar);
@@ -412,6 +411,13 @@
         _showViewOptions = !_showViewOptions;
 
         return Task.CompletedTask;
+    }
+
+    private async Task HandleSettingsClickAsync()
+    {
+        await SelectedDates.ClearAsync();
+        await SelectedDates.AddAsync(_selectedDates);
+        Nav.NavigateTo($"cal/{_calendar.Id}/edit");
     }
 
     private Task ToggleActivityVisibilityAsync(Guid id)
