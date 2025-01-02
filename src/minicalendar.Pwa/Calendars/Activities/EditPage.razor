@@ -1,4 +1,4 @@
-﻿@page "/cal/{CalendarId:guid}/activities/{Id:guid}/edit"
+﻿@page "/cal/{CalendarId:guid}/activities/{Id:guid}/edit/{slug?}"
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
@@ -57,11 +57,9 @@
     private Activity _model = new();
     private Calendar _calendar = new();
 
-    [Parameter]
-    public Guid CalendarId { get; set; }
-    
-    [Parameter]
-    public Guid Id { get; set; }
+    [Parameter] public Guid CalendarId { get; set; }
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public string? Slug { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

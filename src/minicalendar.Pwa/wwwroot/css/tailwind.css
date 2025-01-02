@@ -721,11 +721,6 @@ video {
   margin-bottom: 1.5rem;
 }
 
-.my-8 {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -1183,6 +1178,10 @@ video {
 
 .border-2 {
   border-width: 2px;
+}
+
+.border-4 {
+  border-width: 4px;
 }
 
 .border-b {
@@ -14210,16 +14209,6 @@ video {
   background-color: rgb(234 179 8 / 0.95);
 }
 
-.object-cover {
-  -o-object-fit: cover;
-     object-fit: cover;
-}
-
-.object-center {
-  -o-object-position: center;
-     object-position: center;
-}
-
 .p-1 {
   padding: 0.25rem;
 }
@@ -14330,14 +14319,6 @@ video {
 
 .pt-4 {
   padding-top: 1rem;
-}
-
-.pe-4 {
-  padding-inline-end: 1rem;
-}
-
-.ps-2 {
-  padding-inline-start: 0.5rem;
 }
 
 .text-center {
@@ -14459,6 +14440,11 @@ video {
   color: rgb(34 197 94 / var(--tw-text-opacity, 1));
 }
 
+.text-green-600 {
+  --tw-text-opacity: 1;
+  color: rgb(22 163 74 / var(--tw-text-opacity, 1));
+}
+
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
@@ -14534,14 +14520,6 @@ video {
 .shadow-gray-500 {
   --tw-shadow-color: #6b7280;
   --tw-shadow: var(--tw-shadow-colored);
-}
-
-.outline {
-  outline-style: solid;
-}
-
-.outline-4 {
-  outline-width: 4px;
 }
 
 .ring {
@@ -16713,12 +16691,21 @@ video {
     margin-bottom: 1rem;
   }
 
+  .sm\:my-40 {
+    margin-top: 10rem;
+    margin-bottom: 10rem;
+  }
+
   .sm\:mb-4 {
     margin-bottom: 1rem;
   }
 
   .sm\:mb-8 {
     margin-bottom: 2rem;
+  }
+
+  .sm\:me-4 {
+    margin-inline-end: 1rem;
   }
 
   .sm\:ml-8 {
@@ -16755,10 +16742,6 @@ video {
 
   .sm\:mt-4 {
     margin-top: 1rem;
-  }
-
-  .sm\:me-4 {
-    margin-inline-end: 1rem;
   }
 
   .sm\:block {
@@ -16802,6 +16785,14 @@ video {
 
   .sm\:min-h-16 {
     min-height: 4rem;
+  }
+
+  .sm\:w-1\/3 {
+    width: 33.333333%;
+  }
+
+  .sm\:w-2\/3 {
+    width: 66.666667%;
   }
 
   .sm\:w-96 {
@@ -16865,6 +16856,11 @@ video {
     padding: 1rem;
   }
 
+  .sm\:px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .sm\:px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
@@ -16883,11 +16879,6 @@ video {
   .sm\:py-6 {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
-  }
-
-  .sm\:px-4 {
-    padding-left: 1rem;
-    padding-right: 1rem;
   }
 
   .sm\:pb-16 {
