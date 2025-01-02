@@ -14,6 +14,7 @@
 
 <article>
     <Container>
+        @* Warn if exceeded the maximum number of calendars *@
         @if (_calendars.Count >= GlobalConstants.MaxNumberOfCalendars)
         {
             <AlertWarning>
@@ -21,37 +22,24 @@
                 <PrimaryLink Uri="app">View all calendars</PrimaryLink>
             </AlertWarning>
         }
+        @* Form fields *@
         <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
-            <CustomDataAnnotationsValidator />
+            <CustomDataAnnotationsValidator/>
             <div class="my-6">
                 <label for="title" class="block my-2">Title</label>
-                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
                 <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
             </div>
             <div class="my-6">
-                <label for="description" class="block my-2">Description (optional)</label>
-                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
-            </div>
-            <div class="my-6">
                 <label for="startDate" class="block my-2">Start On</label>
-                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
                 <ValidationMessage For="() => _model.StartDate" id="startDate_feedback" class="mx-2 py-1 text-red-800"/>
             </div>
-            <Toggle Title="Sprint Planning" @bind-Value="_model.EnableSprint">Enable sprint tracks on the calendar.</Toggle>
-            @if (_model.EnableSprint)
-            {
-                <div class="my-4 ms-8">
-                    <label for="sprintStartDate" class="block my-2">Start Sprint On</label>
-                    <InputDate id="sprintStartDate" @bind-Value="_model.SprintStartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                    <ValidationMessage For="() => _model.SprintStartDate" id="sprintStartDate_feedback" class="mx-2 py-1 text-red-800"/>
-                </div>
-                <div class="my-4 ms-8">
-                    <label for="sprintInterval" class="block my-2">Number of days</label>
-                    <InputNumber id="sprintInterval" @bind-Value="_model.SprintInterval" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                    <ValidationMessage For="() => _model.SprintInterval" id="sprintInterval_feedback" class="mx-2 py-1 text-red-800"/>
-                </div>
-            }
+            <div class="my-6">
+                <label for="description" class="block my-2">Description (optional)</label>
+                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
+                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
         </EditForm>
     </Container>
 </article>

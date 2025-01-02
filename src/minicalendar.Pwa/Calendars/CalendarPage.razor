@@ -57,7 +57,7 @@
                     </IconAction>
                 </span>
                 <span class="ms-2 sm:ms-4">
-                    <IconAction Url="@($"cal/{_calendar.Id}/edit")" Title="Settings">
+                    <IconAction Title="Settings" OnClick="HandleSettingsClickAsync">
                         <Cog8ToothIcon class="size-6 sm:size-8"></Cog8ToothIcon>
                     </IconAction>
                 </span>
@@ -93,9 +93,9 @@
                               CurrentDate="_today"
                               Activities="_calendar.Activities"
                               ShowAllDates="_showDates"
-                              EnableSprint="_calendar.EnableSprint"
-                              SprintStartDate="_calendar.SprintStartDate"
-                              SprintInterval="_calendar.SprintInterval"
+                              EnableSprint="_showSprints"
+                              SprintStartDate="_sprintStartDate"
+                              SprintInterval="_sprintLengthInDays"
                               OnDateSelectAsync="OnDateSelectAsync">
                     </YearSpan>
                 </div>
@@ -107,7 +107,7 @@
                     @if (_showLegend && !_selectedDates.Any())
                     {
                         <div class="">
-                            <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id"
+                            <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id" Editable="false"
                                     OnActivityClickAsync="OnLegendActivitySelect"></Legend>
                         </div>
                     }
@@ -145,8 +145,28 @@
     <div>
         <Toggle Title="Display Dates" @bind-Value="_showDates">The date will be shown on all days.</Toggle>
     </div>
-    <div class="mb-8 sm:mt-16 flex justify-end">
-        <SecondaryAction OnClickAsync="HandleViewOptionsChangeAsync">Apply to all calendars</SecondaryAction>
+    @* show sprint *@
+    <FeatureSwitch Name="plus">
+        <div>
+            <Toggle Title="Display Sprints" @bind-Value="_showSprints">Display sprints instead of months.</Toggle>
+        </div>
+        @if (_showSprints)
+        {
+            <div class="my-4 ms-8 me-2">
+                <label for="sprintStartDate" class="block my-2">Start Sprint On</label>
+                <InputDate id="sprintStartDate" @bind-Value="_sprintStartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                @* <ValidationMessage For="() => _sprintStartDate" id="sprintStartDate_feedback" class="mx-2 py-1 text-red-800"/> *@
+            </div>
+            <div class="my-4 ms-8 me-2">
+                <label for="sprintInterval" class="block my-2">Number of days</label>
+                <InputNumber id="sprintInterval" @bind-Value="_sprintLengthInDays" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                @* <ValidationMessage For="() => _sprintLengthInDays" id="sprintInterval_feedback" class="mx-2 py-1 text-red-800"/> *@
+            </div>
+        }
+    </FeatureSwitch>
+    @* save options *@
+    <div class="mb-8 sm:mt-16">
+        <SecondaryAction Class="w-full" OnClickAsync="HandleViewOptionsChangeAsync">Apply settings to all calendars</SecondaryAction>
     </div>
 </Drawer>
 
@@ -215,7 +235,13 @@
     private ViewOrientationType _orientation = ViewOrientationType.Default;
     private bool _showLegend = true;
     private bool _showDates = true;
+    
     private bool _showLegendDetail;
+    
+    private bool _showSprints;
+    private DateOnly _sprintStartDate;
+    private int _sprintLengthInDays = 14;
+    
     private SelectedActivity? _selectedActivity;
     private YearSpan _yearSpan = new();
     private bool _showShareOptions;
@@ -247,7 +273,6 @@
             Nav.NavigateTo("notfound");
             return;
         }
-
         _yearStart = _calendar.StartDate;
 
         await CalendarRepository.RecordView(_calendar);
@@ -388,6 +413,13 @@
         return Task.CompletedTask;
     }
 
+    private async Task HandleSettingsClickAsync()
+    {
+        await SelectedDates.ClearAsync();
+        await SelectedDates.AddAsync(_selectedDates);
+        Nav.NavigateTo($"cal/{_calendar.Id}/edit");
+    }
+
     private Task ToggleActivityVisibilityAsync(Guid id)
     {
         var activity = _calendar.Activities.SingleOrDefault(x => x.Id == id);
@@ -472,18 +504,24 @@
     {
         var options = new CalendarViewOptions
         {
-            DisplayDates = _showDates,
+            ShowDates = _showDates,
             Orientation = _orientation,
-            ShowLegend = _showLegend
+            ShowLegend = _showLegend,
+            ShowSprints = _showSprints,
+            SprintStartDate = _sprintStartDate,
+            SprintLengthInDays = _sprintLengthInDays
         };
         return options;
     }
 
-    private void PopulateViewOptions(CalendarViewOptions viewOptions)
+    private void PopulateViewOptions(CalendarViewOptions opt)
     {
-        _showDates = viewOptions.DisplayDates;
-        _orientation = viewOptions.Orientation;
-        _showLegend = viewOptions.ShowLegend;
+        _showDates = opt.ShowDates;
+        _orientation = opt.Orientation;
+        _showLegend = opt.ShowLegend;
+        _showSprints = opt.ShowSprints;
+        _sprintStartDate = opt.SprintStartDate > DateOnly.MinValue ? opt.SprintStartDate : _calendar.StartDate;
+        _sprintLengthInDays = opt.SprintLengthInDays > 0 ? opt.SprintLengthInDays : 14;
     }
 
     private class SelectedActivity

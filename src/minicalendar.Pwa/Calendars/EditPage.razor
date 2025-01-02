@@ -1,54 +1,74 @@
 ﻿@page "/cal/{id:guid}/edit"
 @using minicalendar.Common.Calendars
+@using minicalendar.Common.Calendars.Activities
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
-@using minicalendar.Common.FeatureSwitch
+@using minicalendar.Common.SortableList
 @inject NavigationManager Nav
 @inject ICalendarRepository CalendarRepo
 
 <Header>
-    <div><SecondaryAction OnClickAsync="HandleCancelAsync" Title="Cancel">Cancel</SecondaryAction></div>
-    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" Title="Save">Save</PrimaryAction></div>
+    <div></div>
+    <div><PrimaryAction OnClickAsync="HandleSubmitAsync" Title="Done">Done</PrimaryAction></div>
 </Header>
 
 <article>
     <Container>
+        @* Form fields *@
         <EditForm EditContext="_editContext" OnSubmit="HandleSubmitAsync" novalidate>
-            <CustomDataAnnotationsValidator />
+            <CustomDataAnnotationsValidator/>
             <div class="my-6">
                 <label for="title" class="block my-2">Title</label>
-                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <InputText id="title" @bind-Value="_model.Title" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
                 <ValidationMessage For="() => _model.Title" id="title_feedback" class="mx-2 py-1 text-red-800"/>
             </div>
             <div class="my-6">
-                <label for="description" class="block my-2">Description (optional)</label>
-                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
-            </div>
-            <div class="my-6">
                 <label for="startDate" class="block my-2">Start On</label>
-                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
+                <InputDate id="startDate" @bind-Value="_model.StartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
                 <ValidationMessage For="() => _model.StartDate" id="startDate_feedback" class="mx-2 py-1 text-red-800"/>
             </div>
-
-            <Toggle Title="Sprint Planning" @bind-Value="_model.EnableSprint">Enable sprint tracks on the calendar.</Toggle>
-            @if (_model.EnableSprint)
-            {
-                <div class="my-4 ms-8">
-                    <label for="sprintStartDate" class="block my-2">Start Sprint On</label>
-                    <InputDate id="sprintStartDate" @bind-Value="_model.SprintStartDate" class="py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                    <ValidationMessage For="() => _model.SprintStartDate" id="sprintStartDate_feedback" class="mx-2 py-1 text-red-800"/>
-                </div>
-                <div class="my-4 ms-8">
-                    <label for="sprintInterval" class="block my-2">Number of days</label>
-                    <InputNumber id="sprintInterval" @bind-Value="_model.SprintInterval" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900" />
-                    <ValidationMessage For="() => _model.SprintInterval" id="sprintInterval_feedback" class="mx-2 py-1 text-red-800"/>
-                </div>
-            }
+            <div class="my-6">
+                <label for="description" class="block my-2">Description (optional)</label>
+                <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
+                <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
+            </div>
         </EditForm>
 
+        @* Activity list *@
         <div class="my-20">
-            <FormAction Title="Activities" Text="Edit activities" OnClickAsync="HandleEditClickAsync">Edit the calendar activities.</FormAction>
+            <label for="sortable" class="block my-2">Activities (optional)</label>
+            @if (_model.Activities.Any())
+            {
+                <SortableList Id="sortable" Class="flex flex-col border rounded-md border-gray-300 divide-y text-lg"
+                              Items="_activities" OnUpdate="@HandleActivityListUpdateAsync" Context="activity">
+                    <SortableItemTemplate>
+                        <li class="flex items-center px-2 sm:px-4 py-4 border-l-8 border-b-gray-300  
+                                    first:rounded-tl-md last:rounded-bl-md 
+                                    @Style.GetColourStyle("border-l", activity.ColourKind)">
+                            <ChevronUpDownIcon class="size-6 text-gray-500 me-2 sm:me-4 hover:cursor-move"/>
+                            <span class="select-none">@activity.Title</span>
+                            <IconButton Class="ms-auto" Title="Edit activity" OnClick="async () => await HandleActivityEditAsync(activity.Id)">
+                                <PencilSquareIcon class="size-6"/>
+                            </IconButton>
+                        </li>
+                    </SortableItemTemplate>
+                </SortableList>
+            }
+            else
+            {
+                <ul class="flex flex-col border rounded-md border-gray-300 divide-y ">
+                    <li class="flex p-4 border-b-gray-300 first:rounded-tl-md last:rounded-bl-md">
+                        <span class="select-none">No activities have been created.</span>
+                    </li>
+                </ul>
+            }
+            <div class="mt-4 flex justify-end">
+                <PrimaryButton OnClickAsync="HandleActivityCreateAsync">Create new activity</PrimaryButton>
+            </div>
+        </div>
+
+        @* Calendar actions *@
+        <div class="my-20">
             <FormAction Title="Duplicate calendar" Text="Duplicate" OnClickAsync="HandleDuplicateClickAsync">Create a duplicate of this calendar and all of it's activities.</FormAction>
             <ActionDanger Title="Delete calender" Text="Delete calendar" OnClickAsync="HandleDeleteClickAsync">Delete this calendar and all of it's activities.</ActionDanger>
         </div>
@@ -58,6 +78,7 @@
 @code {
     private EditContext? _editContext;
     private Calendar _model = new();
+    private List<Activity> _activities = [];
 
     [Parameter]
     public Guid Id { get; set; }
@@ -79,6 +100,7 @@
         _model = data;
         // The model has changed so the EditContext needs updating.
         _editContext = new EditContext(_model);
+        _activities = _model.Activities.ToList();
     }
 
     private async Task HandleSubmitAsync()
@@ -99,12 +121,6 @@
         Nav.NavigateTo($"cal/{_model.Id}");
     }
 
-    private Task HandleCancelAsync()
-    {
-        Nav.NavigateTo($"cal/{_model.Id}");
-        return Task.CompletedTask;
-    }
-
     private async Task HandleDuplicateClickAsync()
     {
         var cal = _model.Duplicate(postfix: " - copy");
@@ -112,15 +128,41 @@
         Nav.NavigateTo($"cal/{cal.Id}");
     }
 
-    private Task HandleEditClickAsync()
-    {
-        Nav.NavigateTo($"cal/{Id}/activities/list");
-        return Task.CompletedTask;
-    }
-    
     private Task HandleDeleteClickAsync()
     {
         Nav.NavigateTo($"cal/{Id}/delete");
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleActivityListUpdateAsync((int oldIndex, int newIndex) indices)
+    {
+        var (oldIndex, newIndex) = indices;
+        var items = _activities;
+        var itemToMove = items[oldIndex];
+        items.RemoveAt(oldIndex);
+
+        if (newIndex < items.Count)
+        {
+            items.Insert(newIndex, itemToMove);
+        }
+        else
+        {
+            items.Add(itemToMove);
+        }
+
+        _model.Activities = _activities;
+        await CalendarRepo.SaveItemAsync(_model);
+    }
+    
+    private Task HandleActivityCreateAsync()
+    {
+        Nav.NavigateTo($"cal/{_model.Id}/activities/create?src=1");
+        return Task.CompletedTask;
+    }
+    
+    private Task HandleActivityEditAsync(Guid id)
+    {
+        Nav.NavigateTo($"cal/{_model.Id}/activities/{id}/edit?src=1");
         return Task.CompletedTask;
     }
 

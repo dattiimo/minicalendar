@@ -69,11 +69,6 @@ public class LocalStorageCalendarRepository(
     public async Task SaveItemAsync(Calendar cal)
     {
         cal.LastModifiedAt = DateTime.UtcNow;
-        if (!cal.EnableSprint)
-        {
-            cal.SprintInterval = null;
-            cal.SprintStartDate = null;
-        }
         await CommitItemAsync(cal);
     }
 
@@ -96,11 +91,6 @@ public class LocalStorageCalendarRepository(
         {
             throw new Exception($"Item not found id:{id}");
         }
-
-        // if (await GetCountAsync() <= 1)
-        // {
-        //     throw new Exception("There must be always be at least one calendar");
-        // } 
 
         await localStorage.RemoveItemAsync(GetKey(id));
     }

@@ -1,6 +1,5 @@
 ﻿using minicalendar.Common.Calendars;
 using minicalendar.Common.Calendars.Activities;
-using minicalendar.Common.Core;
 
 namespace minicalendar.Pwa.Calendars.Templates;
 
@@ -14,17 +13,6 @@ public class TemplateCalendarRepository
             Title = "New Blank Calendar",
             Description = $"Get started with a new calendar for {DateTime.Now.Year}",
             StartDate = new DateOnly(DateTime.Now.Year, 1, 1),
-            EnableSprint = false
-        },
-        new Calendar
-        {
-            Id = new Guid("952ef9b9-f398-4dc8-808c-3ecf3ce65ff2"),
-            Title = "New Sprint Planner",
-            Description = "Sprint planner with two week sprints (edit in settings).",
-            StartDate = new DateOnly(DateTime.Now.Year, 1, 1),
-            EnableSprint = true,
-            SprintStartDate = new DateOnly(DateTime.Now.Year, 1, 1).GetNextDayOfWeek(DayOfWeek.Wednesday),
-            SprintInterval = 14
         },
         new Calendar
         { 
