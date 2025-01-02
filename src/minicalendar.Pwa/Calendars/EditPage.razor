@@ -1,4 +1,5 @@
 ﻿@page "/cal/{id:guid}/edit"
+@using System.ComponentModel.DataAnnotations
 @using minicalendar.Common.Calendars
 @using minicalendar.Common.Calendars.Activities
 @using minicalendar.Common.Forms.Validation
@@ -162,7 +163,9 @@
     
     private Task HandleActivityEditAsync(Guid id)
     {
-        Nav.NavigateTo($"cal/{_model.Id}/activities/{id}/edit?src=1");
+        var activity = _model.Activities.SingleOrDefault(x => x.Id == id);
+        var slug = string.IsNullOrEmpty(activity?.Title) ? string.Empty : "/" + Uri.EscapeDataString(activity.Title.ToLower());
+        Nav.NavigateTo($"cal/{_model.Id}/activities/{id}/edit{slug}?src=1");
         return Task.CompletedTask;
     }
 
