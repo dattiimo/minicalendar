@@ -5,6 +5,7 @@
 @using minicalendar.Common.Forms.Validation
 @using minicalendar.Common.Forms
 @using minicalendar.Common.SortableList
+@using minicalendar.Common.FeatureSwitch
 @inject NavigationManager Nav
 @inject ICalendarRepository CalendarRepo
 
@@ -33,6 +34,13 @@
                 <InputText id="description" @bind-Value="_model.Description" class="flex py-2 px-4 w-full rounded-md border border-gray-400 shadow-sm sm:max-w-md text-gray-900"/>
                 <ValidationMessage For="() => _model.Description" id="description_feedback" class="mx-2 py-1 text-red-800"/>
             </div>
+            <FeatureSwitch Name="plus">
+                <div class="my-6">
+                    <label for="details" class="block my-2">Details (optional)</label>
+                    <InputTextArea id="details" @bind-Value="_model.Details" class="flex py-2 px-4 w-full sm:h-64 rounded-md border border-gray-400 shadow-sm text-gray-900"/>
+                    <ValidationMessage For="() => _model.Details" id="details_feedback" class="mx-2 py-1 text-red-800"/>
+                </div>
+            </FeatureSwitch>
         </EditForm>
 
         @* Activity list *@
