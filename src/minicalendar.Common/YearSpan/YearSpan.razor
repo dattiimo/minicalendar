@@ -397,7 +397,11 @@ on if the layout is landscape or portrait *@
 
     private string GetInitials(Activity? activity)
     {
-        return activity == null ? string.Empty : string.Concat(activity.Title.GetInitials().Take(2));
+        if (string.IsNullOrEmpty(activity?.Title))
+        {
+            return string.Empty;
+        }
+        return string.Concat(activity.Title.GetInitials().Take(2));
     }
     
     private string GetTimeAway(DateOnly date)

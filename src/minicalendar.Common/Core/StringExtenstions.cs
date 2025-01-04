@@ -41,11 +41,23 @@ public static class StringExtensions
     /// 'Lorem ipsum dolor' becomes 'LID' 
     /// </summary>
     public static char[] GetInitials(this string value)
-        => value
+    {
+        var initials = value
             .Split([' '], StringSplitOptions.RemoveEmptyEntries)
             .Where(x => x.Length >= 1 && char.IsLetter(x[0]))
-            .Select(x => char.ToUpper(x[0]))
             .ToArray();
+        if (initials.Length == 0)
+        {
+            return [];
+        }
+
+        if (initials[0].Length == 2)
+        {
+            return initials[0].ToCharArray();
+        }
+
+        return initials.Select(x => char.ToUpper(x[0])).ToArray();
+    }
 
     /// <summary>
     /// Returns true if the given string starts with an emoji.
