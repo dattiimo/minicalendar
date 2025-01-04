@@ -1,10 +1,32 @@
-﻿<div class="my-2 sm:my-4 hover:underline hover:text-green-500">
-    <a href="cal/@Id/@Slug" title="@Title">@Title</a>
+﻿<div class="my-4 sm:my-4">
+    <div class="text-base flex">
+        <a class="text-lg hover:underline hover:text-green-500" href="cal/@Id/@Slug" title="@Title">@Title</a>
+        @if (!string.IsNullOrEmpty(Badge))
+        {
+            <span class="inline-flex -mt-1 h-4 align-start px-2 py-20.5 m-2 ms-2 rounded-lg text-xs @GetBadgeColour()">@Badge</span>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Summary))
+    {
+        <div class="text-base text-gray-500">@Summary</div>
+    }
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
     [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Summary { get; set; } = string.Empty;
+    [Parameter] public string Badge { get; set; } = string.Empty;
 
     private string Slug => Uri.EscapeDataString(Title);
+
+    private string GetBadgeColour()
+    {
+        return Badge switch
+        {
+            "new" => "bg-blue-500 text-white",
+            "example" => "bg-green-500 text-white",
+            _ => "bg-gray-300 text-gray-800"
+        };
+    }
 }

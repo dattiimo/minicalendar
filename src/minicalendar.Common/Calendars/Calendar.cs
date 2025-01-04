@@ -19,6 +19,9 @@ public class Calendar : IValidatableObject
 
     public string Description { get; set; } = string.Empty;
 
+    [MaxLength(2000, ErrorMessage = "Details must be less than 2000 characters.")]
+    public string Details { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "A start date is required.")]
     public DateOnly StartDate { get; set; } = DateTime.Now.ToDateOnly().StartOfYear();
     public List<Activity> Events { get; set; } = [];
@@ -33,6 +36,7 @@ public class Calendar : IValidatableObject
         LastViewedAt = src.LastViewedAt;
         Title = src.Title;
         Description = src.Description;
+        Details = src.Details;
         StartDate = src.StartDate;
     }
 
@@ -43,7 +47,9 @@ public class Calendar : IValidatableObject
         cal.PopulateFrom(this);
         cal.CreatedAt = now;
         cal.LastModifiedAt = now;
-        cal.Title = Title + postfix; 
+        cal.Title = Title + postfix;
+        cal.Description = Description;
+        cal.Details = Details;
         foreach (var evt in Activities)
         {
             var newActivity = new Activity();
