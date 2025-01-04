@@ -9,6 +9,7 @@
 @layout GalleryLayout
 @inject ICalendarStorage CalendarStorage
 @inject TimeProvider TimeProvider
+@inject NavigationManager NavManager
 
 @* A YearSpan doesn't currently render correctly unless it is wrapped in a ViewOrientation so for now, 
 the calendar is just displayed in portrait mode. In future it could easily be user configured. *@
@@ -27,14 +28,17 @@ the calendar is just displayed in portrait mode. In future it could easily be us
             }
             @if (!string.IsNullOrEmpty(_calendar.Details))
             {
-                <div class="my-4 sm:my-4 sm:my-8 p-2 sm:ps-4 text-base text-gray-800 space-y-4">@((MarkupString)Markdown.ToHtml(_calendar.Details))</div>
+                <div class="p-2 sm:ps-4">
+                    <div class="inline-flex items-center text-gray-700 text-sm"><ArrowDownIcon class="me-2 size-4" /><a href="@NavManager.Uri#calendar">jump to the calendar</a></div>
+                    <div class="my-4 sm:my-4 sm:my-8 text-base text-gray-800 space-y-4">@((MarkupString)Markdown.ToHtml(_calendar.Details))</div>
+                </div>
             }
         </div>
 
         @* Display calendar and optional legend *@
         @* Small screens in portrait display the legend below the calendar. *@
         @* Larger screens in portrait display the legend fixed to the right. *@
-        <div class="flex mt-16 sm:mt-24 vport:flex-col vport:md:flex-row vport:md:container vport:md:mx-auto 
+        <div id="calendar" class="flex mt-16 sm:mt-24 vport:flex-col vport:md:flex-row vport:md:container vport:md:mx-auto 
                     vland:flex-col vland:justify-start">
             @* Calendar *@
             <div class="vland:overflow-x-scroll vland:md:overflow-x-visible vland:py-4 vport:flex vport:flex-col">
