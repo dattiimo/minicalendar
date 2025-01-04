@@ -1,4 +1,6 @@
-﻿<div class="my-4 sm:my-4">
+﻿@using minicalendar.Common.Core
+
+<div class="my-4 sm:my-4">
     <div class="text-base flex">
         <a class="text-lg hover:underline hover:text-green-500" href="cal/@Id/@Slug" title="@Title">@Title</a>
         @if (!string.IsNullOrEmpty(Badge))
@@ -18,7 +20,7 @@
     [Parameter] public string Summary { get; set; } = string.Empty;
     [Parameter] public string Badge { get; set; } = string.Empty;
 
-    private string Slug => Uri.EscapeDataString(Title);
+    private string Slug => Title.ToSeoUriPath();
 
     private string GetBadgeColour()
     {
