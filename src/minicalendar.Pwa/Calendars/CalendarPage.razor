@@ -306,16 +306,17 @@
             Count = activity.Dates.Count,
             IsShown = activity.IsShown
         };
-        
-        DateOnly? nextDate = activity.Dates.FirstOrDefault(x => x >= _today);
+
+        var orderedDates = activity.Dates.OrderBy(x => x).ToArray();
+        DateOnly? nextDate = orderedDates.FirstOrDefault(x => x >= _today);
         if (nextDate.HasValue && nextDate > DateOnly.MinValue && nextDate != _today)
         {
             var diff = _today.Difference(nextDate.Value);
             _selectedActivity.DaysToNext = diff.TotalDays;
             _selectedActivity.NextDateText = $"{diff.TotalDays} days until the next activity.";
         }
-        
-        DateOnly? lastDate = activity.Dates.FirstOrDefault(x => x < _today);
+
+        DateOnly? lastDate = orderedDates.LastOrDefault(x => x < _today);
         if (lastDate.HasValue && lastDate > DateOnly.MinValue && lastDate != _today)
         {
             var diff = _today.Difference(lastDate.Value);
