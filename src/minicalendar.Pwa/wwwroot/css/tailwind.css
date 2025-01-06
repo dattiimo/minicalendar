@@ -721,11 +721,6 @@ video {
   margin-bottom: 1.5rem;
 }
 
-.my-8 {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
 .-mt-1 {
   margin-top: -0.25rem;
 }
@@ -14318,10 +14313,6 @@ video {
 
 .ps-10 {
   padding-inline-start: 2.5rem;
-}
-
-.ps-2 {
-  padding-inline-start: 0.5rem;
 }
 
 .ps-3 {
