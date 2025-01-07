@@ -11,6 +11,8 @@
 @inject TimeProvider TimeProvider
 @inject NavigationManager NavManager
 
+<PageTitle>@_calendar.Title - mini calendar</PageTitle>
+
 @* A YearSpan doesn't currently render correctly unless it is wrapped in a ViewOrientation so for now, 
 the calendar is just displayed in portrait mode. In future it could easily be user configured. *@
 <ViewOrientation Orientation="@ViewOrientationType.Portrait">
