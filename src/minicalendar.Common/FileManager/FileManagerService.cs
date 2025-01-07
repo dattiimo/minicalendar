@@ -10,6 +10,10 @@ public class FileManagerService(IJSRuntime jsRuntime)
     {
         await ImportModuleAsync();
 
+        if (_module == null)
+        {
+            return;
+        }
         await _module.InvokeAsync<object>(
             "common_fileManager_saveAsFile",
             filename,

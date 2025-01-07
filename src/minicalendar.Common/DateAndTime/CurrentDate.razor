@@ -23,7 +23,6 @@
 
 @code {
     private DateOnly _today = DateOnly.MinValue;
-    private BackgroundTask? _refreshTimer;
 
     [Parameter] public DateOnly? Value { get; set; }
     [Parameter] public string? Format { get; set; }
@@ -31,8 +30,6 @@
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("OnInitializedAsync");
-        // _refreshTimer = new BackgroundTask(TimeSpan.FromHours(1), OnIntervalAsync);
-        // _refreshTimer.Start();
         await base.OnInitializedAsync();
     }
     
@@ -47,13 +44,4 @@
         Logger.LogInformation($"SetDate()");
         _today = Value ?? TimeProvider.GetLocalNow().DateTime.ToDateOnly();
     }
-
-    // private Task OnIntervalAsync()
-    // {
-    //     Logger.LogInformation($"Refreshing CurrentDate");
-    //     SetDate();
-    //     Logger.LogInformation($"Set CurrentDate: {_today}");
-    //     StateHasChanged();
-    //     return Task.CompletedTask;
-    // }
 }
