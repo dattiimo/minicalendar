@@ -19,6 +19,12 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
 });
 
+// server side caching
+builder.Services.AddOutputCache(options =>
+{
+    options.AddBasePolicy(build => build.Expire(TimeSpan.FromSeconds(300)));
+});
+
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -35,8 +41,6 @@ builder.Services.AddSingleton<IBlobStorageConnectionString, BlobStorageConnectio
 
 var app = builder.Build();
 
-app.UseResponseCompression();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -44,9 +48,13 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseResponseCompression();
+    
+    app.UseOutputCache();
+
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    //app.UseHsts();
 }
 
 app.UseHttpsRedirection();
