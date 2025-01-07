@@ -13,6 +13,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Compression - https://learn.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-9.0#risk
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -28,6 +34,8 @@ builder.Services.AddSingleton<IBlobStorageConnectionString, BlobStorageConnectio
 
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
