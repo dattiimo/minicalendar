@@ -6,7 +6,6 @@
 @using minicalendar.Common.Core
 @using minicalendar.Common.ViewOrientation
 @using minicalendar.Common.YearSpan
-@layout GalleryLayout
 @inject ICalendarStorage CalendarStorage
 @inject TimeProvider TimeProvider
 @inject NavigationManager NavManager
@@ -18,7 +17,7 @@ the calendar is just displayed in portrait mode. In future it could easily be us
 <ViewOrientation Orientation="@ViewOrientationType.Portrait">
     <article class="">
         <div class="flex items-center mb-4">
-            <a class="flex items-center" href="gallery" title="Gallery"><ArrowLeftIcon class="size-4 me-2"/>Gallery</a>
+            <a class="inline-flex items-center text-gray-700 text-sm" href="gallery" title="Gallery"><ArrowLeftIcon class="size-4 me-2"/>Back to gallery</a>
         </div>
         
         @* Calendar title and description *@
@@ -31,7 +30,7 @@ the calendar is just displayed in portrait mode. In future it could easily be us
             @if (!string.IsNullOrEmpty(_calendar.Details))
             {
                 <div class="p-2 sm:ps-4">
-                    <div class="inline-flex items-center text-gray-700 text-sm"><ArrowDownIcon class="me-2 size-4" /><a href="@NavManager.Uri#calendar">jump to the calendar</a></div>
+                    <div class="inline-flex items-center text-gray-700 text-sm"><ArrowDownIcon class="me-2 size-4" /><a href="@NavManager.Uri#calendar">Jump to the calendar</a></div>
                     <div class="my-4 sm:my-4 sm:my-8 text-base text-gray-800 space-y-4">@((MarkupString)Markdown.ToHtml(_calendar.Details))</div>
                 </div>
             }
@@ -59,6 +58,10 @@ the calendar is just displayed in portrait mode. In future it could easily be us
                     <Legend Activities="_calendar.Activities" CalendarId="_calendar.Id" Editable="false"></Legend>
                 </div>
             </aside>
+        </div>
+
+        <div class="flex items-center mt-16">
+            <a class="inline-flex items-center text-gray-700 text-sm" href="gallery" title="Gallery"><ArrowLeftIcon class="size-4 me-2"/>Back to gallery</a>
         </div>
 
     </article>
