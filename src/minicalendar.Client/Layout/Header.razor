@@ -1,29 +1,33 @@
-﻿<header class="body-font">
-    <div class="mt-2 flex flex-wrap justify-between align-center">
+﻿<header class="text-gray-900 body-font">
+    <div class="flex flex-wrap w-full justify-between md:py-5 md:flex-row items-center">
         @* Branding *@
-        <div class="lg:order-1">
-            <a href="/" class="flex items-center">
-                <img src="images/icon-192.png" class="max-w-12 sm:max-w-16" alt="logo" title="mini calendar"/>
-                @if (ShowName)
-                {
-                    <span class="ml-2 text-xl text-gray-600 hover:text-gray-800 font-medium">mini calendar</span>
-                }
+        <div class="order-1 w-1/2 md:w-auto">
+            <a href="/" class="flex -ms-2 title-font font-medium items-center text-gray-800" title="mini calendar home">
+                <img src="images/icon-192.png" class="w-16" width="64" height="64" alt="mini calendar logo - 5 rows of 7 dots that represent days of the month" title="mini calendar"/>
+                <span class="ml-0 md:ml-2 text-lg flex md:pr-4 md:border-r md:border-gray-400">mini calendar</span>
             </a>
+        </div>
+        @* Navigation *@
+        <div class="order-3 md:order-2 w-full md:w-auto md:mr-auto">
+            <nav class="md:ml-4 md:py-1 flex flex-wrap items-center text-base justify-center">
+                <a href="gallery" class="mr-5 hover:text-red-800 hover:underline">Gallery</a>
+                @* <a href="blog" class="mr-5 hover:text-red-800 hover:underline">Blog</a> *@
+            </nav>
         </div>
         @* Call to action *@
-        <div class="lg:order-3 pe-2 lg:pe-2 flex items-center">
-            <a href="@ActionUri" class="inline-flex items-center bg-gray-200 text-base py-2 px-4 focus:outline-none hover:bg-green-300 rounded rounded-lg">
-                <span class="">@ActionText</span>
-                <ArrowRightIcon class="hidden sm:block w-4 h-4 ms-2" />
-            </a>
-        </div>
+        @if (ShowAction)
+        {
+            <div class="order-2 md:order-3 w-1/2 md:w-auto flex justify-end">
+                <a href="https://my.minicalendar.app" title="Launch the Mini Calendar App"
+                   class="inline-flex items-center border-0 hover:border-1 border-gray-400 py-1 px-3 focus:outline-none bg-gray-200 hover:bg-gray-300 rounded-lg text-base">
+                    <span class="">Launch App</span>
+                    <ArrowRightIcon class="hidden md:block w-4 h-4 ms-2 size-2"/>
+                </a>
+            </div>
+        }
     </div>
 </header>
 
 @code {
-    [Parameter] public bool ShowName { get; set; }
-
-    [Parameter] public string ActionText { get; set; } = "Launch App";
-
-    [Parameter] public string ActionUri { get; set; } = "https://my.minicalendar.app";
+    [Parameter] public bool ShowAction { get; set; } = true;
 }

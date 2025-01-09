@@ -13,6 +13,18 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Compression - https://learn.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-9.0#risk
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
+// server side caching
+builder.Services.AddOutputCache(options =>
+{
+    options.AddBasePolicy(build => build.Expire(TimeSpan.FromSeconds(300)));
+});
+
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -36,9 +48,13 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseResponseCompression();
+    
+    app.UseOutputCache();
+
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    //app.UseHsts();
 }
 
 app.UseHttpsRedirection();
