@@ -2,9 +2,9 @@
     <div class="flex flex-wrap w-full justify-between md:py-5 md:flex-row items-center">
         @* Branding *@
         <div class="order-1 w-1/2 md:w-auto">
-            <a href="/" class="flex -ms-2 title-font font-medium items-center text-gray-900" title="mini calendar home">
-                <img src="images/icon-192.png" class="w-16" height="64" width="64" alt="mini calendar logo - 5 rows of 7 dots that represent days of the month" title="mini calendar"/>
-                <span class="ml-0 md:ml-2 text-xl flex md:pr-4 md:border-r md:border-gray-400">mini calendar</span>
+            <a href="/" class="flex -ms-2 title-font font-medium items-center text-gray-800" title="mini calendar home">
+                <img src="images/icon-192.png" class="w-16" width="64" height="64" alt="mini calendar logo - 5 rows of 7 dots that represent days of the month" title="mini calendar"/>
+                <span class="ml-0 md:ml-2 text-lg flex md:pr-4 md:border-r md:border-gray-400">mini calendar</span>
             </a>
         </div>
         @* Navigation *@
@@ -15,16 +15,19 @@
             </nav>
         </div>
         @* Call to action *@
-        <div class="order-2 md:order-3 w-1/2 md:w-auto flex justify-end">
-            <a href="https://my.minicalendar.app" title="Launch the Mini Calendar App"
-               class="inline-flex items-center border-0 hover:border-1 border-gray-400 py-1 px-3 focus:outline-none bg-gray-200 hover:bg-gray-300 rounded-lg text-base">
-                <span class="">Launch App</span>
-                <ArrowRightIcon class="hidden md:block w-4 h-4 ms-2 size-2"/>
-            </a>
-        </div>
+        @if (ShowAction)
+        {
+            <div class="order-2 md:order-3 w-1/2 md:w-auto flex justify-end">
+                <a href="https://my.minicalendar.app" title="Launch the Mini Calendar App"
+                   class="inline-flex items-center border-0 hover:border-1 border-gray-400 py-1 px-3 focus:outline-none bg-gray-200 hover:bg-gray-300 rounded-lg text-base">
+                    <span class="">Launch App</span>
+                    <ArrowRightIcon class="hidden md:block w-4 h-4 ms-2 size-2"/>
+                </a>
+            </div>
+        }
     </div>
 </header>
 
 @code {
-
+    [Parameter] public bool ShowAction { get; set; } = true;
 }

@@ -4,34 +4,43 @@
 
 <aside class="fixed bottom-0 w-full bg-gray-700 text-gray-300 z-50 rounded-t-lg @(_isExpanded ? "expanded" : "collapsed")
         shadow-[0px_-8px_12px_-6px_rgba(55,_65,_81,_0.5)]">
-    <div class="container mx-auto px-4 pt-4 sm:pt-16 pb-16 overflow-y-auto max-h-32 expand:max-h-64 sm:max-h-96">
+    <div class="container mx-auto px-4 pt-4 sm:pt-16 pb-16 overflow-y-auto h-1/2 ">
         <div class="flex flex-wrap justify-center expand:justify-stretch expand:sm:justify-center expand:flex-col expand:sm:flex-row sm:flex-row sm:flex-wrap w-full">
 
-            @* Create new activity button *@
-            <button class="px-3 py-2 my-2 sm:mx-2 rounded min-w-10 flex justify-center items-center text-sm sm:text-base select-none
-                    border-2 border-gray-900 
-                    bg-gray-900 text-green-400 
-                    ring-gray-900 ring-2" 
-                    type="button"
-                    @onclick="HandleCreateClickAsync"
-                    >
-                <PlusIcon class="size-6"/>
-                <span class="ms-2 hidden sm:block">Create new</span>
-            </button>
-
-            @foreach (var activity in Activities)
+            @if (Activities.Any())
             {
-                <button class="px-3 py-2 my-2 sm:mx-2 rounded min-w-10 flex justify-center text-sm sm:text-base select-none
+                <div class="flex flex-wrap justify-center py-2 text-sm text-gray-400 w-full sm:mb-8">Add or remove an existing activity</div>
+                @foreach (var activity in Activities)
+                {
+                    <button class="px-3 py-2 my-2 sm:mx-2 rounded min-w-10 flex justify-center text-sm sm:text-base select-none
                     sm:max-w-48 text-clip whitespace-nowrap overflow-hidden sm:justify-start
                     border-2 @(IsSelected(activity.Dates) ? "border-red-800 " : activity.GetColourStyle("border", activity.ColourKind))
                     @activity.GetBackgroundStyle(activity.ColourKind)
                     @activity.GetColourStyle("ring", activity.ColourKind) ring-2"
-                        type="button"
-                        @onclick="async () => await HandleSelectedClickAsync(activity)">
-                    <span class="hidden expand:inline-block sm:inline-block text-base">@activity.Title</span>
-                    <span class="inline-block expand:hidden sm:hidden">@activity.GetAbbreviatedTitle()</span>
-                </button>
+                            type="button"
+                            @onclick="async () => await HandleSelectedClickAsync(activity)">
+                        <span class="hidden expand:inline-block sm:inline-block text-base">@activity.Title</span>
+                        <span class="inline-block expand:hidden sm:hidden">@activity.GetAbbreviatedTitle()</span>
+                    </button>
+                }
             }
+            else
+            {
+                <div class="flex justify-center py-2 text-sm text-gray-400 w-full sm:mb-8">You have no existing activities. Add a new one for the chosen dates.</div>
+            }
+
+            @* Create new activity button *@
+            <button class="px-3 py-2 my-2 mt-8 sm:mt-2 sm:mx-2 rounded min-w-10 flex justify-center items-center text-sm sm:text-base select-none
+                border-2 border-gray-900 
+                bg-gray-900 text-green-400 
+                ring-gray-900 ring-2 
+                " 
+                    type="button"
+                    @onclick="HandleCreateClickAsync"
+            >
+                <PlusIcon class="size-6"/>
+                <span class="ms-2">Create new activity</span>
+            </button>
 
             @if (Activities.Any())
             {
@@ -49,7 +58,7 @@
             }
             else
             {
-                <p class="font-light text-sm px-3 py-2 sm:mx-2 sm:ms-8">You have no existing activities. Add a new one for the chosen dates.</p>
+                
             }
 
             @* Show more/less *@
