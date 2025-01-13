@@ -46,9 +46,10 @@ public static class Style
 
     public static string GetBackgroundStyle(int style, bool useAltStyle = false)
     {
+        // Emoji
         if (style == 0)
         {
-            return "bg-white text-gray-900";
+            return "text-gray-900";
         }
         return "text-white " + (useAltStyle ? GetAltColourStyle("bg", style) : 
             GetColourStyle("bg", style));
