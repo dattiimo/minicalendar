@@ -1,0 +1,14 @@
+﻿@inherits LayoutComponentBase
+
+@* Create a space for where the header will be to avoid content flashing. Headers will sit over top of the space. *@
+@* <div class="w-full mb-4 sm:mb-8"> *@
+@*     <div class="w-full min-h-16"></div> *@
+@* </div> *@
+@* @Body *@
+@* <div class="pb-20">&nbsp;</div> $1$ Allow padding at the bottom of all pages to compensate for mobile frame. #1# *@
+
+<div class="flex flex-col h-screen container mx-auto px-5">
+    <div class="py-8">@Body</div>
+</div>
+@* Allow padding at the bottom of all pages to compensate for mobile frame. *@
+<div class="pb-20">&nbsp;</div> 

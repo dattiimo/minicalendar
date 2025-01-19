@@ -3,9 +3,24 @@
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
     <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
+        <PageTitle>Not found - mini calendar</PageTitle>
+        <LayoutView Layout="@typeof(StaticLayout)">
+            <section class="text-gray-600 body-font">
+                <div class="w-full lg:mb-0 mb-6 p-4">
+                    <div class="h-full text-center space-y-4">
+                        <a href="/"><img alt="mini calendar logo" class="w-20 h-20 mb-8 object-cover object-center inline-block" src="images/icon-192.png"></a>
+                        <p class="text-4xl">Not Found!</p>
+                        <p class="">Sorry, there's nothing at this address.</p>
+                        <p class="">
+                            <a href="/" title="Back to the app home" class="">Back to app</a>
+                        </p>
+                        <div class="my-6"><span class="inline-block h-1 w-10 rounded bg-green-500"></span></div>
+                        <p class="">
+                            <a href="https://minicalendar.app/contact" title="Contact mini calendar developer">Report an issue</a>
+                        </p>
+                    </div>
+                </div>
+            </section>
         </LayoutView>
     </NotFound>
 </Router>
