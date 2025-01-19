@@ -10,7 +10,10 @@
 <PageTitle>Export your data - mini calendar</PageTitle>
 
 <Container>
-    <InputTextArea @bind-Value="@_data" class="w-full h-64 bg-gray-200"></InputTextArea>
+    <article>
+        <h1 class="sr-only">Export your data.</h1>
+        <InputTextArea @bind-Value="@_data" class="w-full h-64 bg-gray-200"></InputTextArea>
+    </article>
 </Container>
 
 @code {
