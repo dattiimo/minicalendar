@@ -95,7 +95,7 @@
         var exportAsJson = JsonSerializer.Serialize(export);
         var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
 
-        await FileManager.SaveAsAsync($"minicalendar-export-{TimeProvider.GetLocalNow().Date:yyyyMMddHHmm}.json", exportAsBytes);
+        await FileManager.SaveAsAsync($"minicalendar-export-{TimeProvider.GetLocalNow().Date:yyyyMMddHHmm}.json", exportAsBytes, "application/json");
     }
 
     private async Task HandleUploadAsync(InputFileChangeEventArgs e)
