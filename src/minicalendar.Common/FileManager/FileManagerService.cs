@@ -6,7 +6,7 @@ public class FileManagerService(IJSRuntime jsRuntime)
 {
     private IJSObjectReference? _module;
     
-    public async Task SaveAsAsync(string filename, byte[] data)
+    public async Task SaveAsAsync(string filename, byte[] data, string contentType = "application/octet-stream")
     {
         await ImportModuleAsync();
 
@@ -17,7 +17,8 @@ public class FileManagerService(IJSRuntime jsRuntime)
         await _module.InvokeAsync<object>(
             "common_fileManager_saveAsFile",
             filename,
-            Convert.ToBase64String(data));
+            Convert.ToBase64String(data),
+            contentType);
     }
 
     public async Task ImportModuleAsync()
