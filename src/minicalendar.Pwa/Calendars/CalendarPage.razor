@@ -193,28 +193,28 @@
 
 @* Sharing options panel *@
 
-<Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
-    <FeatureSwitch Name="plus">
-        <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
-        @if (_calendar.Publication != null)
-        {
-            var publishUrl = $"http://minicalendar.app/cal/{_calendar.Publication.Id}";
-            <div class="text-sm text-gray-500">
-                <div class="mt-2 sm:mt-2">
-                    <span>ID: </span><span>@_calendar.Publication.Id</span>
+    <Drawer @bind-IsOpen="_showShareOptions" Title="" IsModal="true">
+        <FeatureSwitch Name="plus">
+            <FormAction Title="Publish calendar" Text="Publish" OnClickAsync="HandlePublishAsync">Anyone can access view calendar.</FormAction>
+            @if (_calendar.Publication != null)
+            {
+                var publishUrl = $"http://minicalendar.app/cal/{_calendar.Publication.Id}";
+                <div class="text-sm text-gray-500">
+                    <div class="mt-2 sm:mt-2">
+                        <span>ID: </span><span>@_calendar.Publication.Id</span>
+                    </div>
+                    <div class="mt-2 sm:mt-2">
+                        <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
+                    </div>
+                    <div class="mt-2 sm:mt-2">
+                        <PrimaryTextAction OnClickAsync="HandleUnpublishAsync">Remove</PrimaryTextAction>
+                    </div>
                 </div>
-                <div class="mt-2 sm:mt-2">
-                    <span>URI: </span><a href="@publishUrl" class="text-gray-500 hover:text-green-400">@publishUrl</a>
-                </div>
-                <div class="mt-2 sm:mt-2">
-                    <PrimaryTextAction OnClickAsync="HandleUnpublishAsync">Remove</PrimaryTextAction>
-                </div>
-            </div>
-        }
-    </FeatureSwitch>
+            }
+        </FeatureSwitch>
 
-    <FormAction Title="Export calendar" Text="Export" OnClickAsync="HandleExportAsync">Download an export file for back up.</FormAction>
-</Drawer>
+        <FormAction Title="Export calendar" Text="Export" OnClickAsync="HandleExportAsync">Download an export file for back up.</FormAction>
+    </Drawer>
 
 
 @if (_selectedDates.Any())
@@ -454,7 +454,7 @@
     {
         var exportAsJson = JsonSerializer.Serialize(_calendar);
         var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
-        await FileManager.SaveAsAsync($"cal_{_calendar.Id}.json", exportAsBytes);
+        await FileManager.SaveAsAsync($"cal_{_calendar.Id}.json", exportAsBytes, "application/json");
     }
 
     /// <summary>
