@@ -452,7 +452,21 @@
     /// </summary>
     private async Task HandleExportAsync()
     {
-        var exportAsJson = JsonSerializer.Serialize(_calendar);
+        // Keep the persisted model's Activities property unchanged. The interchange format uses
+        // Events, projected from the same in-memory collection only at the export boundary.
+        var exportAsJson = JsonSerializer.Serialize(new
+        {
+            _calendar.Id,
+            _calendar.CreatedAt,
+            _calendar.LastModifiedAt,
+            _calendar.LastViewedAt,
+            _calendar.Title,
+            _calendar.Description,
+            _calendar.Details,
+            _calendar.StartDate,
+            Events = _calendar.Activities,
+            _calendar.Publication
+        });
         var exportAsBytes = System.Text.Encoding.UTF8.GetBytes(exportAsJson);
         await FileManager.SaveAsAsync($"cal_{_calendar.Id}.json", exportAsBytes, "application/json");
     }
